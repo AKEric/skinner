@@ -29,8 +29,6 @@ import maya.api.OpenMayaAnim as oma2
 
 #------------
 
-__VERSION__ = "1.0.0"
-
 # Must do, to register API2.0 commands correctly.  Secret Maya magic.
 maya_useNewAPI = True
 
@@ -318,7 +316,7 @@ def initializePlugin(plugin):
     Initialize the plug-in when loadPlugin is called.
     """
     # https://help.autodesk.com/view/MAYAUL/2020/ENU/?guid=__py_ref_class_open_maya_1_1_m_fn_plugin_html
-    pluginFn = om2.MFnPlugin(plugin, "www.akeric.com", __VERSION__)
+    pluginFn = om2.MFnPlugin(plugin, "www.akeric.com")
     try:
         pluginFn.registerCommand(SkinnerSetWeights.commandName,
                                  SkinnerSetWeights.cmdCreator,
