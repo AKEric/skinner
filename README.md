@@ -42,6 +42,7 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * Automated debug test suite you can run to confirm everything is working.
 * Based on testing/comparing against Maya’s [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html) system for skinClusters, while it appears to export at roughly the same speed, it can be up to 5-10x faster on import, and provides substantially more options / ease of use.
 * Verbose docstrings for all classes, methods, and functions, to be used with Pythons help function.
+
 ## Usage Examples
 * Integrate into a rebuildable asset pipeline:
   * After skinning is performed on your ‘SkeletalMesh’ scene, export that Skinner data to disk.
@@ -150,7 +151,7 @@ The App call can take multiple different args during creation, to help integrate
 The UI is split into three main tabs, discussed below.  At the top, you’ll see your current ‘Window Version’ (W) and ‘Tool Version’ (T).
 
 ### Import Tab
-
+![skinnner_importTab](images/skinnner_importTab.JPG)
 The import tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes. They’re all converted to mesh:vert data, that is compared against the imported SkinChunk data:
 
 * If mesh are selected:  All their verts are included.
@@ -207,7 +208,7 @@ UI Elements:
   * Import Temp : Import from the last temp .sknr file saved by the ‘Export Temp’ button in the Export tab.
   
 ### Export Tab
-
+![skinnner_exportTab](images/skinnner_exportTab.JPG)
 The export tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes: All of this is converted in the mesh:vert SkinChunk data during export.
 
 * If mesh are selected:  All their verts are included.
@@ -257,7 +258,7 @@ That way each individual user won’t have to enter the values… and get them w
 * Remember: When you add a new .sknr file to your VC software, before you submit, confirm its file type is binary!
 
 ### Extras Tab
-
+![skinnner_extrasTab](images/skinnner_extrasTab.JPG)
 * **Run the ‘skinner test suite’?**
   * This runs a unit test on the skinner tool, generating a new scene, auto exporting/importing .sknr weights as a test.
   * Press this button to test the tool any time!  Check the Script Editor for results.
