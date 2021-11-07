@@ -374,7 +374,9 @@ The most common functions you’ll interact with in the core module are:
   * setWeights : The return from this is what is returned by importSkin : Check its docstring for details.
 * test : run the test suite
 * printWeightFile
+
 As mentioned above, the UI code lives in skinner skinner.window.py
+
 To get information on the __init__ args for that class:
 ```python
 import skinner.window as skinWin
