@@ -269,6 +269,7 @@ Here is a made up example using a wrapper module/function around Perforce:
 import myCompany.myP4Tool as p4Tool; p4Tool.manageFile('%s')
 ```
 Where it’s presumed that the manageFile function will both mark for add or edit the provide file, based on its current server status.
+
 **Depot Root**
 * If this is provided, it’s the local path to the root of your version control depot.
 * The ‘Exec Command’ will only fire if the .sknr file being exported is somewhere under this path.
