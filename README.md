@@ -292,13 +292,15 @@ That way each individual user won’t have to enter the values… and get them w
 * **Run the ‘skinner test suite’?**
   * This runs a unit test on the skinner tool, generating a new scene, auto exporting/importing .sknr weights as a test.
   * Press this button to test the tool any time!  Check the Script Editor for results.
-* **Documentation…**
-  * Launch these docs.
+* **Homepage...** 
+  *  Link to this github repo.
+* **Documentation...**
+  * Launch these docs (that you're reading now).
   * Note, you can override the docs this button launches for your team via:
 ```python
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
-  *  And if you do, it’s a good idea to link back to these docs in your custom ones.
+  * To enable custom docs for this tool, specific for your project/team.
 * **‘Auto-Fill’ Subdir :**
   *  If this is populated, this is a subdir(s) that will be appended to the ‘Auto-Fill’ buttons in the Export & Import tabs.  For example, if in your production, you always save skin weights in a subdir relative to the current scene, this field makes it easy to update the ‘Auto-Fill’ button with that subdir.
 * Print sknr file info…
