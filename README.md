@@ -262,7 +262,10 @@ UI Elements:
   * Export Temp : Export to a temp file, that can be imported via ‘Import Temp’ in the Import tab.
 
 #### Interacting With Version Control
-This section allows you to integrate this tool into your studios version control Python API.  To date it’s only been tested with Perforce. (See the P4 Python API docs here).
+This section allows you to integrate this tool into your studios version control Python API.  
+ 
+To date it’s only been tested with Perforce. (See the P4 Python API docs [here](https://www.perforce.com/manuals/p4python/Content/P4Python/Home-p4python.html)).
+ 
 **Exec Command**
 * This is your internal python code that should be executed to edit/add the .sknr file to your version control.
 * It requires that you embed the Python string formatting (with the surrounding quotes) ‘%s’ into it, as the pathway for this tool to pass the path of the .sknr file to your Python API.
@@ -289,7 +292,7 @@ That way each individual user won’t have to enter the values… and get them w
 **IMPORTANT :**
 * As shown in the UI:  If you’re using Perforce for version control (and this could equally apply to other VC apps like git, subversion, mercurial, etc, but they are untested) : You need to tell your VC software that the ‘.sknr’ file type is binary.
 * By default, many will add new file types as ascii, and this will corrupt the .sknr data once on the server.  Your local file will work fine, but anyone else that pulls down a version (or if you sync to someone else’s version), it will be broken.
-* For Perforce, see the p4 typemap command to switch these types, or talk to your VC administrator for a site-wide update.
+* For Perforce, see the [p4 typemap command](https://www.perforce.com/manuals/v19.2/cmdref/Content/CmdRef/p4_typemap.html) to switch these types, or talk to your VC administrator for a site-wide update.
 * Remember: When you add a new .sknr file to your VC software, before you submit, confirm its file type is binary!
 
 ### Extras Tab
