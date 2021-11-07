@@ -387,10 +387,11 @@ To get information on the __init__ args for that class:
 import skinner.window as skinWin
 help(skinWin.App.__init__)
 
-__init__(self, vcExecCmd=None, vcDepotRoot=None, autoFillSubdir=None, docsOverride='https://www.akeric.com/blog/?page_id=4582', *args, **kwargs)
-    Init our main window. There are certain defaults that you may want exposed
-    to your team consistently: That's what the below parameters are for.
- 
+__init__(self, vcExecCmd=None, vcDepotRoot=None, autoFillSubdir=None, 
+         docsOverride='https://github.com/AKEric/skinner/blob/main/README.md', *args, **kwargs)
+    Init our main window.  There are certain defaults that you may want exposed
+    to your team consistently:  That's what the below parameters are for.
+    
     Parameters:
         ...
 ```
