@@ -21,7 +21,7 @@
 - [Using the Skinner API](#using-the-skinner-api)
 
 # Overview
-Skinner is a tool for Autodesk Maya designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
+Skinner is a tool for [Autodesk Maya](https://www.autodesk.com/products/maya/overview) designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
 
 At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ data, discussed below.
 
