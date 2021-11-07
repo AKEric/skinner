@@ -1,5 +1,26 @@
+**Table Of Contents**
+- [Overview](#overview)
+  * [Export Features](#export-features)
+  * [Import Features](#import-features)
+  * [Other Features](#other-features)
+  * [Usage Examples](#usage-examples)
+  * [Why this tool](#why-this-tool)
+  * [Similar Tools](#similar-tools)
+- [Help](#help)
+- [Requirements](#requirements)
+- [Integrating Into Your Pipeline](#integrating-into-your-pipeline)
+- [Access the Maya Tool UI](#access-the-maya-tool-ui)
+  * [Tool UI Overview](#tool-ui-overview)
+    + [Import Tab](#import-tab)
+    + [Export Tab](#export-tab)
+    + [Extras Tab](#extras-tab)
+- [Skinner Concepts](#skinner-concepts)
+  * [The .sknr file format](#the-sknr-file-format)
+  * [SkinChunks and UberChunks](#skinchunks-and-uberchunks)
+- [Using the Skinner API](#using-the-skinner-api)
+
 # Overview
-Skinner is an Autodesk Maya tool designed to make exporting and importing skin weights on polygonal mesh fast and easy.  Having both a UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
+Skinner is a tool for Autodesk Maya designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
 
 At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ data, discussed below.
 
@@ -9,7 +30,7 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * Can ‘set to bindpose’ before export, or not.
 
 ## Import Features
-* Can import from multiple .sknr files at the same time.
+* Can import from multiple .sknr files at the same time & merge the data.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing, based on the ‘Fallback Skinning Method’ (**FSM**) defined: It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or ‘Closest Point’.
 * Options to ‘set to bindpose’, build missing influences (joints), and either unbind first, or append to the current skinning on import.
@@ -40,7 +61,7 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * Full integration into your teams version control software.
 * Introspection/printing of data in the custom .sknr file format (pickled Python data).
 * Automated debug test suite you can run to confirm everything is working.
-* Based on testing/comparing against Maya’s [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html) system for skinClusters, while it appears to export at roughly the same speed, it can be up to 5-10x faster on import, and provides substantially more options / ease of use.
+* Speed : Based on testing/profilling against Maya’s [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html) system, while it appears to export at roughly the same speed, it can be up to 5-10x faster on import, and provides substantially more options / ease of use.
 * Verbose docstrings for all classes, methods, and functions, to be used with Pythons help function.
 
 ## Usage Examples
@@ -56,37 +77,43 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * You’re copying skinning from one pair of ‘skinny jeans’ to a pair of ‘MC-hammer pants’: After you do, you transform the hip joints, and there are many ‘stretching verts’ between the legs, where the parachute-pants overlap.  No problem, reimport with the ‘Vert Normal Filter’ enabled to resolve this.
 * You want to copy the weights between two mesh, that are the same topology, but different names, no problem:  Make sure “Load by vert count/order” is checked, and it’ll transfer the weights 1:1.
 * You can generate a ‘weight depot’ on a server: Update your Skinner export pipeline code to export a .sknr file per mesh to the server, with the filename * “<leafMeshName>_<vertCount>.sknr” during export.  You’ve authored custom wrapper import code that for each mesh, see if it can find a name match in the .sknr files : If it does, load that data. If it doesn’t, find all the vertCount matches : For those matches, check and see if the vert order matches, and if so, load that data, regardless of name mismatch.
-* Something it doesn’t do? Let me know!
-## Why this tool? 
-I’ve been rigging & skinning in Maya since v1 (other DCC apps previous to that), full time techart since before it had a industry name, and shipped multiple best-selling AAA titles.
+* Something it doesn’t do? Let me know for improvement. 
  
-Having built entire art -> engine pipelines for multiple studios, with fully procedurally build rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.
+## Why this tool
+I’ve been rigging & skinning in Maya since v1 (other DCC apps previous to that), full time techart since before it had a industry name, and shipped multiple best-selling AAA titles.  https://www.linkedin.com/in/pavey/
  
-https://www.linkedin.com/in/pavey/
+Having built entire art -> engine pipelines for multiple studios, with fully procedurally built rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
-Note:  I have a full time job, and work on this in my spare time.  By using it you accept the fact that you are at the mercy of my schedule.
-
+It is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.
+ 
 ## Similar Tools
 If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know.
 * Maya provided tools
-  *  [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html)
-    *  Skinner outperforms on speed, and provides a substantially better UI, and overall feature set.
-  *  [Weight Maps Export](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-7681F977-32D2-4FE4-A83D-E1C9FB2B402F-htm.html), [Weight Map Import](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-DD0E4715-294F-43EF-A70B-1EAD8389CA0E-htm.html)
+  * [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html)
+    * Skinner outperforms on speed, and provides a substantially better UI, and overall feature set.
+  * [Weight Maps Export](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-7681F977-32D2-4FE4-A83D-E1C9FB2B402F-htm.html), [Weight Map Import](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-DD0E4715-294F-43EF-A70B-1EAD8389CA0E-htm.html)
     * This export skin weights as 2d images, but is entirely predicated on good/non-overlapping UV’s.  Skinner has substantially better import options available.
 * [ngSkinTools](https://www.ngskintools.com/)
-  * Provides an interesting way to paint skin weights, but provides limited export of those weights.
+  * Provides an interesting way to paint skin weights, but provides a limited featureset for exporting/importing of those weights.
   * Skinner would be a good compliment to this system.
 * [mGear](http://www.mgear-framework.com/)
-  * A robust procedural rigging solution, also includes code for skin weight save & load.
+  * A robust procedural rigging solution, also includes code for skin weight export & import.
   * I’ve not researched the specifics, but even in [the docs](https://mgear4.readthedocs.io/en/latest/official-unofficial-workflow.html), they discuss using the ngSkin tools as part of their process.
   * API docs for skinning [here](http://www.mgear-framework.com/mgear_dist/mgear/core/skin.html).  The docs list ‘This module is derived from Chad Vernon’s Skin IO’, [here](https://github.com/chadmv/cmt/tree/master/scripts/cmt/deform).
   * Skinner would be good compliment to this system.
 * Others? Let me know.
-  
+
+# Help
+Please log problems & requests in the **Issues** section of this github.
+ 
+I have a full time job, and work on this in my spare time.  By using it you accept the fact that you are at the mercy of my schedule.
+ 
+I welcome all suggestions & ideas for improvement.
+
 # Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible.
 * Python 3 (Maya 2022+)
-* These Python packaged available on Maya’s Python’s path for import (based on your version of Maya):
+* Based on your version of Maya, these Python packages available on Maya’s Python’s path for import:
   * [Numpy](https://numpy.org/)
   * [Scipy](https://scipy.org/)
 Maya 2022+ makes it very easy to install new Python packages via pip.  Maya 2022 docs [HERE](https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-72A245EC-CDB4-46AB-BEE0-4BBBF9791627).
@@ -122,7 +149,10 @@ print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
 ```
 # Integrating Into Your Pipeline
-All code lives in a /skinner Python package : As long as you add that directory as a subdir of one of your Maya Python sys.path locations: Maya will find it a-ok for import.
+All code lives in a /skinner Python package.  If you don't use git to manage code, you can easily install via the provided zip:  
+* Download a zip of this repro via the green Code button -> Download zip.
+* Open the zip, and extra the /skinner subdir to a location on your Maya-Python sys.path.
+* Maya will find it a-ok for import.
 
 To get a list of those paths, execute in the Script Editor:
 ```python
