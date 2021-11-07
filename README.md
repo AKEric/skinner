@@ -332,9 +332,14 @@ A single SkinChunk can be imagined as a point cloud of data for a specific mesh.
 When importing on mesh, the tool tries to find a SkinChunk that has a name match with it.  What happens if it can’t?  An ‘UberChunk’ is formed.  The UberChunk is a combination of every SkinChunk provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match in the skinChunks provided.
 
 # Using the Skinner API
+
 The skinner tool is designed to be fully integrated into a rebuildable asset pipeline.
+ 
 The skinner.core.py module is what holds the functions you’re after.
-All functions & classes are fully doc-stringed.  Please use the Python help function to get more information for them.  For example:
+ 
+All functions & classes are fully doc-stringed.  Please use the Python help function to get more information for them.  
+ 
+For example:
 
 ```python
 import skinner.core as skinCore
