@@ -116,11 +116,13 @@ I welcome all suggestions & ideas for improvement.
 * Based on your version of Maya, these Python packages available on Maya’s Python’s path for import:
   * [Numpy](https://numpy.org/)
   * [Scipy](https://scipy.org/)
+
 Maya 2022+ makes it very easy to install new Python packages via pip.  Maya 2022 docs [HERE](https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-72A245EC-CDB4-46AB-BEE0-4BBBF9791627).
 
 Here is an example usage for Maya 2022 on Windows 10:
 
 Open cmd shell **as admin** (on Windows at least).
+
 Then line by line:
 
 Install the numpy & scipy packages, one at a time.  Note, it’s important to call to mayapy.exe specificallyto execute it’s version of pip.
