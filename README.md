@@ -58,8 +58,11 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * Something it doesn’t do? Let me know!
 ## Why this tool? 
 I’ve been rigging & skinning in Maya since v1 (other DCC apps previous to that), full time techart since before it had a industry name, and shipped multiple best-selling AAA titles.
+ 
 Having built entire art -> engine pipelines for multiple studios, with fully procedurally build rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.
+ 
 https://www.linkedin.com/in/pavey/
+ 
 Note:  I have a full time job, and work on this in my spare time.  By using it you accept the fact that you are at the mercy of my schedule.
 
 ## Similar Tools
@@ -118,7 +121,7 @@ print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
 ```
 # Integrating Into Your Pipeline
-All code lives in a /skinner Python package : As long as you add that directory as a subdir of one of your Maya Python sys.path : Maya will find it a-ok for import.
+All code lives in a /skinner Python package : As long as you add that directory as a subdir of one of your Maya Python sys.path locations: Maya will find it a-ok for import.
 
 To get a list of those paths, execute in the Script Editor:
 ```python
@@ -131,7 +134,7 @@ To test that you have a successful install via the Maya Script Editor, run the t
 import skinner.core as skinCore
 skinCore.test()
 ```
-You can also access the test suite via the UI -> Extras tab.
+You can also access/run the test suite via the UI -> Extras tab.
 
 It should be noted that after install, importing skinner.core will run skinner.utils.confirmDependencies, and will print any errors found to the Script Editor.
 
@@ -159,6 +162,7 @@ Based on the mesh:vert’s being imported on:
 * If they find a name match but the vert count/order differs, or if there is no mesh name match, they use the ‘Fallback Skinning Method’ (FSM) discussed below.
 * If a FSM is used by mesh name match, then the FSM will only include the verts in the point cloud of that name matched SkinChunk, for both speed and skinning accuracy.
 * If no mesh name match is found, an ‘UberChunk’ is generated that is a point cloud combination of all SkinChunks, and the FSM acts on that UberChunk data.
+
 UI Elements:
 * **Pathing**
   *  : The path of the .sknr file(s) to import, based on:
@@ -210,6 +214,7 @@ The export tab acts on the selected (in any combination) verts, mesh, joints, tr
 * If joints are selected:  The mesh they influence are found, and all their verts are included.
 * If verts are selected:  Those verts are included.
 * If transform/group nodes are selected:  All child mesh in the full hierarchy are found, and their verts included.
+
 UI Elements:
 * **Pathing:**
   * Path : The path of the .sknr file(s) to import, based on:
@@ -259,7 +264,7 @@ That way each individual user won’t have to enter the values… and get them w
 * **Documentation…**
   * Launch these docs.
   * Note, you can override the docs this button launches for your team via:
-````python
+```python
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
   *  And if you do, it’s a good idea to link back to these docs in your custom ones.
