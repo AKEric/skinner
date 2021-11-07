@@ -13,6 +13,7 @@
   * [Tool UI Overview](#tool-ui-overview)
     + [Import Tab](#import-tab)
     + [Export Tab](#export-tab)
+      - [Interacting With Version Control](#interacting-with-version-control)
     + [Extras Tab](#extras-tab)
 - [Skinner Concepts](#skinner-concepts)
   * [The .sknr file format](#the-sknr-file-format)
@@ -259,8 +260,9 @@ UI Elements:
 * **Exporting:**
   * Export To Path : Export to the path provided above.
   * Export Temp : Export to a temp file, that can be imported via ‘Import Temp’ in the Import tab.
-* **Version Control**
-  * This section allows you to integrate this tool into your studios version control Python API.  To date it’s only been tested with Perforce. (See the P4 Python API docs here).
+
+#### Interacting With Version Control
+This section allows you to integrate this tool into your studios version control Python API.  To date it’s only been tested with Perforce. (See the P4 Python API docs here).
 **Exec Command**
 * This is your internal python code that should be executed to edit/add the .sknr file to your version control.
 * It requires that you embed the Python string formatting (with the surrounding quotes) ‘%s’ into it, as the pathway for this tool to pass the path of the .sknr file to your Python API.
