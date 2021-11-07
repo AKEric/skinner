@@ -84,7 +84,7 @@ I’ve been rigging & skinning in Maya since v1 (other DCC apps previous to that
  
 Having built entire art -> engine pipelines for multiple studios, with fully procedurally built rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
-It is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.
+It is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.  Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
  
 ## Similar Tools
 If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know.
