@@ -1,5 +1,6 @@
 **Table Of Contents**
 - [Overview](#overview)
+  * [Disclaimers](#disclaimers)- 
   * [Export Features](#export-features)
   * [Import Features](#import-features)
   * [Other Features](#other-features)
@@ -19,11 +20,20 @@
   * [The .sknr file format](#the-sknr-file-format)
   * [SkinChunks and UberChunks](#skinchunks-and-uberchunks)
 - [Using the Skinner API](#using-the-skinner-api)
+- [About Me](#about-me)- 
 
 # Overview
 Skinner is a tool for [Autodesk Maya](https://www.autodesk.com/products/maya/overview) designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
 
 At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ data, discussed below.
+
+## Disclaimers
+
+Skinner is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.  
+
+Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
+
+I have a full time job, this is a side project:  I will attempt to address all issues outside of work hours to the best of my abilities.
 
 ## Export Features
 * Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ‘SkinChunk’ information for storage.
@@ -81,11 +91,8 @@ At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ d
 * Something it doesn’t do? Let me know for improvement. 
  
 ## Why this tool
-I’ve been rigging & skinning in Maya since v1 (other DCC apps previous to that), full time techart since before it had a industry name, and shipped multiple best-selling AAA titles.  https://www.linkedin.com/in/pavey/
- 
-Having built entire art -> engine pipelines for multiple studios, with fully procedurally built rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
- 
-It is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.  Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
+
+Having built entire art -> engine pipelines for multiple studios (EA/Visceral, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedurally rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
 ## Similar Tools
 If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know.
@@ -106,8 +113,6 @@ If you are the author of any of the below tools and feel I have represented your
 
 # Help
 Please log problems & requests in the **Issues** section of this github.
- 
-I have a full time job, and work on this in my spare time.  By using it you accept the fact that you are at the mercy of my schedule.
  
 I welcome all suggestions & ideas for improvement.
 
@@ -406,3 +411,13 @@ __init__(self, vcExecCmd=None, vcDepotRoot=None, autoFillSubdir=None,
 ```
 
 Many utility/shared functions live in ```skinner.utils.py```
+
+# About Me
+
+Technical Art Director at 31st Union (2K)
+
+https://www.linkedin.com/in/pavey/
+
+I also maintain some wikis:
+* http://mayamel.tiddlyspot.com/
+* http://pythonwiki.tiddlyspot.com/
