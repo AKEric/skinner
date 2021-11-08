@@ -412,7 +412,7 @@ Many utility/shared functions live in ```skinner.utils.py```
 
 # About Me
 
-Technical Art Director at 31st Union (2K)
+Technical Art Director at [31st Union](https://thirtyfirstunion.com/) (2K)
 
 https://www.linkedin.com/in/pavey/
 
