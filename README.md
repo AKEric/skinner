@@ -1,6 +1,6 @@
 **Table Of Contents**
 - [Overview](#overview)
-  * [Disclaimers](#disclaimers)- 
+  * [Disclaimers](#disclaimers)
   * [Export Features](#export-features)
   * [Import Features](#import-features)
   * [Other Features](#other-features)
