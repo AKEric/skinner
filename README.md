@@ -25,7 +25,7 @@
 # Overview
 Skinner is a tool for [Autodesk Maya](https://www.autodesk.com/products/maya/overview) designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
 
-At high level, the Skinner tool works by exporting & importing ‘SkinChunk’ data, discussed below.
+At high level, the Skinner tool works by exporting & importing ```SkinChunk``` data, discussed below.
 
 ## Disclaimers
 
@@ -33,44 +33,42 @@ Skinner is closed source code:  You are welcome to use it for your benefit for f
 
 Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
 
+If you have interest in purchasing the source for your production, please contact me for pricing info. ```warpcat at gmail dot com```
+
 I have a full time job, this is a side project:  I will attempt to address all issues outside of work hours to the best of my abilities.
 
 ## Export Features
-* Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ‘SkinChunk’ information for storage.
-* Can export as many mesh/verts (as SkinChunk data) to a single ```.sknr``` file as needed.
+* Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ```SkinChunk``` information for storage.
+* Can export as many mesh/verts (as ```SkinChunk``` data) to a single ```.sknr``` file as needed.
 * Can ‘set to bindpose’ before export, or not.
 
 ## Import Features
-* Can import from multiple ```.sknr``` files at the same time & merge the data.
+* Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing, based on the ‘Fallback Skinning Method’ (**FSM**) defined: It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or ‘Closest Point’.
 * Options to ‘set to bindpose’, build missing influences (joints), and either unbind first, or append to the current skinning on import.
 * Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay.
 * High level import logic path, regardless if you’re importing onto multiple mesh, or some vertex selection:
-  * Does a leaf mesh name match a SkinChunk name?
+  * Does a leaf mesh name match a ```SkinChunk``` name?
     * Yes
-      * Does the SkinChunk only have a single influence mesh?
-        * Yes
-          * Skin to that one joint 100%
+      * Does the ```SkinChunk``` only have a single influence joint?
+        * Yes : Skin to that one joint 100%
         * No
           * Does it have the same vert count/order as the mesh?
-            * Yes
-              * Import by 1:1 vert IDs
-            * No
-              * Use that SkinChunk’s point cloud and import by the ‘FSM’.
+            * Yes : Import by 1:1 vert IDs
+            * No : Use that ```SkinChunk```’s point cloud and import by the ‘FSM’.
     * No
-        * Can a SkinChunk be found with the same vert count/order as the mesh?
-          * Yes
-            * Import by 1:1 vert IDs
-          * No
-            * Generate the UberChunk, using is point cloud, import by the ‘FSM’.
+        * Can a single ```SkinChunk``` be found with the same vert count/order as the mesh? (presuming this option is set)
+          * Yes : Import by 1:1 vert IDs.
+          * No : Generate the ```UberChunk```, using its point cloud, import by the ‘FSM’.
 
 ## Other Features
-* Supports duplicate mesh names for export/import (the tool converts everything to long/absolute paths)
-* Supports Maya’s linear, dual-quat, and weight-blended ‘Skinning Methods’.
+* Supports duplicate mesh names in the Maya scene during import (the tool converts everything to long/absolute paths for import purposes).  
+* Supports duplicate mesh names in the Maya scene during export, but a ```.sknr``` file can't store data for mesh with duplicate names (but you could store different ```.sknr``` files for each).
+* Supports Maya’s linear, dual-quat, and weight-blended 'Skinning Methods':  What state its in during export will be the state applied during import.
 * Verbose and robust results printed to the Script Editor / returned by the API for your own pipeline’s consumption.
 * Full integration into your teams version control software.
-* Introspection/printing of data in the custom ```.sknr``` file format (pickled Python data).
+* Introspection/printing of data in the custom ```.sknr``` file format (binary pickled Python data).
 * Automated debug test suite you can run to confirm everything is working.
 * Speed : Based on testing/profilling against Maya’s [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html) system, while it appears to export at roughly the same speed, it can be up to 5-10x faster on import, and provides substantially more options / ease of use.
 * Verbose docstrings for all classes, methods, and functions, to be used with Pythons help function.
@@ -92,10 +90,10 @@ I have a full time job, this is a side project:  I will attempt to address all i
  
 ## Why this tool
 
-Having built entire art -> engine pipelines for multiple studios (EA/Visceral, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedurally rigging solutions, one of the biggest areas that is missing in Maya is a solid skin weight export/import process.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
+Having built holistic art -> engine pipelines for multiple studios (EA/Visceral, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions, one of the biggest areas that is missing in that pipeline-subset is a solid/repeatable skin weight export/import process in Maya. The tools that Maya provides lack features (and can be slow), and there isn't anything I could find (free or paid) that had the feature-set I wanted.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
 ## Similar Tools
-If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know.
+If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know for correction.
 * Maya provided tools
   * [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html)
     * Skinner outperforms on speed, and provides a substantially better UI, and overall feature set.
@@ -114,7 +112,7 @@ If you are the author of any of the below tools and feel I have represented your
 # Help
 Please log problems & requests in the **Issues** section of this github.
  
-I welcome all suggestions & ideas for improvement.
+I welcome all suggestions & ideas for improvement.  As mentioned above I maintain this tool in my off-hours, and will try to address any issues to the best of my ability.
 
 # Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible.
@@ -190,26 +188,26 @@ The UI is split into three main tabs, discussed below.  At the top, you’ll see
 
 ### Import Tab
 ![skinnner_importTab](images/skinnner_importTab.JPG)
-The import tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes. They’re all converted to mesh:vert data, that is compared against the imported SkinChunk data:
+The import tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes. They’re all converted to mesh:vert data, that is compared against the imported ```SkinChunk``` data:
 
 * If mesh are selected:  All their verts are included.
 * If joints are selected:  The mesh they influence are found, and all their verts are included.
 * If verts are selected:  Those verts are included.
 * If transform/group nodes are selected:  All child mesh in the full hierarchy are found, and their verts included.
 Based on the mesh:vert’s being imported on:
-* When ```.sknr``` files are imported the imported (target) SkinChunks first try to find a match by leaf mesh name in the (source) mesh:verts
+* When ```.sknr``` files are imported the imported (target) ```SkinChunk```s first try to find a match by leaf mesh name in the (source) mesh:verts
 * If they find a name match but the vert count/order differs, or if there is no mesh name match, they use the ‘Fallback Skinning Method’ (FSM) discussed below.
-* If a FSM is used by mesh name match, then the FSM will only include the verts in the point cloud of that name matched SkinChunk, for both speed and skinning accuracy.
-* If no mesh name match is found, an ‘UberChunk’ is generated that is a point cloud combination of all SkinChunks, and the FSM acts on that UberChunk data.
+* If a FSM is used by mesh name match, then the FSM will only include the verts in the point cloud of that name matched ```SkinChunk```, for both speed and skinning accuracy.
+* If no mesh name match is found, an ```UberChunk``` is generated that is a point cloud combination of all ```SkinChunk```s, and the FSM acts on that ```UberChunk``` data.
 
 UI Elements:
 * **Pathing**
   *  : The path of the ```.sknr``` file(s) to import, based on:
   * Auto Fill : By default, this will be set to the directory of the currently saved scene.  You can update this with custom subdirs via the option in the Extras tab.
   * ‘…’ : Browse to a file(s) to import from.
-* **Fallback Skinning Method** (FSM):  A FSM is used when the vert count/order of the source mesh being imported into is different than the target mesh / SkinChunk with stored values.  If they’re the same vert count / order, then the weights are imported 1:1 with no interpolation.  A FSM can act on SkinChunk data (if there is a name match, but no vert count/order match) or on the UberChunk, when there is no name match.
+* **Fallback Skinning Method** (FSM):  A FSM is used when the vert count/order of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  If they’re the same vert count / order, then the weights are imported 1:1 with no interpolation.  A FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match.
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
-    * Find the closest target (in the Skin/UberChunk point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
+    * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
     * Based on the ‘Nearest Neighbor Distance Mult’, generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
     * Looking within that sphere, find up to the closest ‘Number Closest Neighbors’ target verts. In this example we’ll search for 3 total verts (the closest, + 2 others).
     * Generate distance for each of the target verts found to the source vert : Normalize those distance to all fit from 0 -> 1.0
@@ -219,12 +217,12 @@ UI Elements:
 * **Use Vert Normal Filter**
   * If enabled, if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  The default is 0 : This means, match any target vert who’s normal is on the same hemisphere as the source.  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.
 * **Post Smooth Steps:**
-  * If a FSM is used, and the vert count of the source mesh being imported onto is greater than the target Skin/UberChunk point cloud being loaded from:  Smooth the resultant skinning based on the number of steps.   This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
-  * Note, this only performs the smooth on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weight as-is.  Also, if the vert count of the mesh being imported onto is greater than the Skin/UberChunk point cloud being loaded from, no smoothing is performed, since this tends to generate poor results.  Set this value to 0 to disable entirely.
+  * If a FSM is used, and the vert count of the source mesh being imported onto is greater than the target ```SkinChunk```/```UberChunk``` point cloud being loaded from:  Smooth the resultant skinning based on the number of steps.   This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
+  * Note, this only performs the smooth on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weight as-is.  Also, if the vert count of the mesh being imported onto is greater than the ```SkinChunk```/```UberChunk``` point cloud being loaded from, no smoothing is performed, since this tends to generate poor results.  Set this value to 0 to disable entirely.
 * **Load By Vert Count / Order?**
-  * If a FSM is triggered to be used, and this is checked: The tool will search through all the SkinChunks to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that Skin/UberChunk.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
+  * If a FSM is triggered to be used, and this is checked: The tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
 * **Build Missing Influences:**
-  * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  Note, while their worldspace transformation will match that stored in the SkinChunk data, their translate\rotate\jointOrient values could be different based on parenting.
+  * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  Note, while their worldspace transformation will match that stored in the ```SkinChunk``` data, their translate\rotate\jointOrient values could be different based on parenting.
 * **Set To Bindpose:**
   * If this is checked, and if you’re importing  onto mesh that is already skinned:  Set it to bindpose before the import (or if ‘Unbind First’ is checked, below).  If for any reason the bindpose can’t be set, there will be an error.  If there is no dagPose node for that skinCluster/influences, it will be skipped without error.
 * **Unbind First?**
@@ -232,10 +230,10 @@ UI Elements:
     * Check it: If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how doe all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
     * Uncheck it: If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
     * Uncheck it: If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
-* **Force From UberChunk?**
-  * Mostly for testing:  Make everything read in from the UberChunk point cloud using the active FSM.
+* **Force From ```UberChunk```?**
+  * Mostly for testing:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
 * **Select Instead Of Skin:**
-  * Mostly for testing : If the SkinChunk data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
+  * Mostly for testing : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
 * **Print Import Overview:**
   * In addition to ‘verbose logging’ that can be found in the Extras tab:  If this is checked, an ‘overview’ of the import will be printed to the Script Editor.  It has two modes that will change how the data is printed.  It should be noted that regardless of the mode picked, it will group the data by successful/unsuccessful import:
   * By Import Type: This will group the overview by the solution used to import the weights : by vert ID, by FSM, etc.
@@ -247,7 +245,7 @@ UI Elements:
   
 ### Export Tab
 ![skinnner_exportTab](images/skinnner_exportTab.JPG)
-The export tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes: All of this is converted in the mesh:vert SkinChunk data during export.
+The export tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes: All of this is converted in the mesh:vert ```SkinChunk``` data during export.
 
 * If mesh are selected:  All their verts are included.
 * If joints are selected:  The mesh they influence are found, and all their verts are included.
@@ -323,12 +321,12 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 # Skinner Concepts
   
 ## The .sknr file format
-A ```.sknr``` file is a Python pickled (binary) list of SkinChunk instances.
+A ```.sknr``` file is a Python pickled (binary) list of ```SkinChunk``` instances.
 
-When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, SkinChunks that have a mesh name clash with other SkinChunks are pruned out:  Only the ‘most recently exported’ SkinChunk will win the battle.  This can allow your team to asselble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
+When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, ```SkinChunk```s that have a mesh name clash with other ```SkinChunk```s are pruned out:  Only the ‘most recently exported’ ```SkinChunk``` will win the battle.  This can allow your team to asselble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
 
 ## SkinChunks and UberChunks
-When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a SkinChunk.  A SkinChunk stores things like:
+When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
 * The leaf mesh name it was saved for.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
 * The influence joint list.  Plus their worldspace transforms, and parents.
@@ -339,11 +337,11 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * A sample of vert neighbors.
 * The ‘skinning method’ : Linear, dual-quat, weight-blended.
 
-A ```.sknr``` file can hold one or more SkinChunks in it.   When importing ```.sknr``` files, multiple can be selected.  In that case, all the SkinChunks are merged together in a big list… but what happens if two SkinChunks are based on the same mesh name? The ‘newer’ (most recently exported) SkinChunk wins.
+A ```.sknr``` file can hold one or more ```SkinChunk```s in it.   When importing ```.sknr``` files, multiple can be selected.  In that case, all the ```SkinChunk```s are merged together in a big list… but what happens if two ```SkinChunk```s are based on the same mesh name? The ‘newer’ (most recently exported) ```SkinChunk``` wins.
 
-A single SkinChunk can be imagined as a point cloud of data for a specific mesh.
+A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh.
 
-When importing on mesh, the tool tries to find a SkinChunk that has a name match with it.  What happens if it can’t?  An ‘UberChunk’ is formed.  The UberChunk is a combination of every SkinChunk provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match in the skinChunks provided.
+When importing on mesh, the tool tries to find a ```SkinChunk``` that has a name match with it.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match in the skinChunks provided.
 
 # Using the Skinner API
 
