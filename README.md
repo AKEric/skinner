@@ -20,7 +20,7 @@
   * [The .sknr file format](#the-sknr-file-format)
   * [SkinChunks and UberChunks](#skinchunks-and-uberchunks)
 - [Using the Skinner API](#using-the-skinner-api)
-- [About Me](#about-me)- 
+- [About Me](#about-me)
 
 # Overview
 Skinner is a tool for [Autodesk Maya](https://www.autodesk.com/products/maya/overview) designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
@@ -272,6 +272,7 @@ To date it’s only been tested with Perforce. (See the P4 Python API docs [here
 **Exec Command**
 * This is your internal python code that should be executed to edit/add the ```.sknr``` file to your version control.
 * It requires that you embed the Python string formatting (with the surrounding quotes) ```'%s'``` into it, as the pathway for this tool to pass the path of the ```.sknr``` file to your Python API.
+
 Here is a made up example using a wrapper module/function around Perforce:
 ```python
 import myCompany.myP4Tool as p4Tool; p4Tool.manageFile('%s')
@@ -308,11 +309,10 @@ That way each individual user won’t have to enter the values… and get them w
   *  Link to this github repo.
 * **Documentation...**
   * Launch these docs (that you're reading now).
-  * Note, you can override the docs this button launches for your team via:
+  * Note, you can override the docs this button launches for your team via the below code, so as to provide custom docs for this tool, specific for your project/team.
 ```python
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
-  * To enable custom docs for this tool, specific for your project/team.
 * **‘Auto-Fill’ Subdir :**
   *  If this is populated, this is a subdir(s) that will be appended to the ‘Auto-Fill’ buttons in the Export & Import tabs.  For example, if in your production, you always save skin weights in a subdir relative to the current scene, this field makes it easy to update the ‘Auto-Fill’ button with that subdir.
 * Print sknr file info…
