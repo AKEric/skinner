@@ -90,7 +90,11 @@ I have a full time job, this is a side project:  I will attempt to address all i
  
 ## Why this tool
 
-Having built holistic art -> engine pipelines for multiple studios (EA/Visceral, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions, one of the biggest areas that is missing in that pipeline-subset is a solid/repeatable skin weight export/import process in Maya. The tools that Maya provides lack features (and can be slow), and there isn't anything I could find (free or paid) that had the feature-set I wanted.  This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
+Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions, one of the biggest areas that is missing in that pipeline-subset is a solid/repeatable skin weight export/import process in Maya. 
+
+The tools that Maya provides lack features (and can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
+
+This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
 ## Similar Tools
 If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know for correction.
@@ -117,7 +121,7 @@ I welcome all suggestions & ideas for improvement.  As mentioned above I maintai
 # Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible.
 * Python 3 (Maya 2022+)
-* Based on your version of Maya, these Python packages available on Maya’s Python’s path for import:
+* Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
   * [Scipy](https://scipy.org/)
 
@@ -157,8 +161,8 @@ print(sp.__file__)
 # Integrating Into Your Pipeline
 All code lives in a ```/skinner``` Python package.  If you don't use git to manage code, you can easily install via the provided zip:  
 * Download a zip of this repro via the green Code button -> Download zip.
-* Open the zip, and extract the ```/skinner``` subdir to a location on your Maya-Python sys.path.
-* Maya will find it a-ok for import.
+* Open the zip, and extract the ```/skinner``` subdir to a location on your Maya-Python ```sys.path```.
+* It is now available for import & usage in Maya.
 
 To get a list of those paths, execute in the Script Editor:
 ```python
