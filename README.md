@@ -75,7 +75,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 
 ## Usage Examples
 * Integrate into a rebuildable asset pipeline:
-  * After skinning is performed on your ‘SkeletalMesh’ scene, export that Skinner data to disk.
+  * After skinning is performed on your 'SkeletalMesh'/'DeformedMesh' scene, export that Skinner data to disk.
   * Update mesh poly counts, names, etc in your ‘StaticMesh’ scene.
   * Via your pipeline code, When you regenerate your SkekeletalMesh from the StaticMesh, the Skinner tool handles all the mesh name changes, etc, loading weights onto matching mesh names where it can, and interpolating weights for new mesh / renamed mesh.
 * You have good arm skinning in sceneA, and want to copy it to only a section of an arm in sceneB:
@@ -97,7 +97,7 @@ The tools that Maya provides lack features (and can be slow), and there isn't an
 This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
 ## Similar Tools
-If you are the author of any of the below tools and feel I have represented your software inaccurately, please let me know for correction.
+If you are the author of any of the below tools and feel I have misrepresented your software in any way, please let me know for correction.
 * Maya provided tools
   * [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html)
     * Skinner outperforms on speed, and provides a substantially better UI, and overall feature set.
@@ -133,7 +133,7 @@ Open cmd shell **as admin** (on Windows at least).
 
 Then line by line:
 
-Install the numpy & scipy packages, one at a time.  Note, it’s important to call to mayapy.exe specificallyto execute it’s version of pip.
+Install the numpy & scipy packages, one at a time, via pip.  Note, it’s important to call to mayapy.exe specificallyto execute it’s version of pip.
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
@@ -159,7 +159,7 @@ print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
 ```
 # Integrating Into Your Pipeline
-All code lives in a ```/skinner``` Python package.  If you don't use git to manage code, you can easily install via the provided zip:  
+All code lives in a ```/skinner``` Python package.  If you don't use git to manage code, you can easily download/extract via the provided zip:  
 * Download a zip of this repro via the green Code button -> Download zip.
 * Open the zip, and extract the ```/skinner``` subdir to a location on your Maya-Python ```sys.path```.
 * It is now available for import & usage in Maya.
@@ -175,7 +175,7 @@ To test that you have a successful install via the Maya Script Editor, run the t
 import skinner.core as skinCore
 skinCore.test()
 ```
-You can also access/run the test suite via the UI -> Extras tab.
+You can also access/run the test suite via the UI -> Extras tab (see how to open the UI below).
 
 It should be noted that after install, importing ```skinner.core``` will run ```skinner.utils.confirmDependencies```, and will print any errors found to the Script Editor.
 
