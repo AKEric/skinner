@@ -111,6 +111,10 @@ If you are the author of any of the below tools and feel I have misrepresented y
   * I’ve not researched the specifics, but even in [the docs](https://mgear4.readthedocs.io/en/latest/official-unofficial-workflow.html), they discuss using the ngSkin tools as part of their process.
   * API docs for skinning [here](http://www.mgear-framework.com/mgear_dist/mgear/core/skin.html).  The docs list ‘This module is derived from Chad Vernon’s Skin IO’, [here](https://github.com/chadmv/cmt/tree/master/scripts/cmt/deform).
   * Skinner would be good compliment to this system.
+* [Zoo Tools](https://create3dcharacters.com/maya-tool-skinning-utilities/)
+  * Large suite of convenience tools/scenes across Maya, that includes rigging & skinning.
+  * Their 'Skinning Utilities' tool brings a lot of Maya's tools toegher in one spot, but doesn't have anything for robust skin weight export/import.
+  * Skinner would be a good compliment to this system.
 * Others? Let me know.
 
 # Help
