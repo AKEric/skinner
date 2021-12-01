@@ -90,9 +90,9 @@ I have a full time job, this is a side project:  I will attempt to address all i
  
 ## Why this tool
 
-Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions, one of the biggest areas that is missing in that pipeline-subset is a solid/repeatable skin weight export/import process in Maya. 
+Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions and rebuildable static mesh -> skeletal/deformed mesh pipeilnes, one of the biggest areas that is missing in that rebuildable-asset pipeline-subset is a solid/repeatable skin weight export/import process in Maya, that supports radical chagnes to the source mesh during skin reapplication.
 
-The tools that Maya provides lack features (and can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
+The tools that Maya provides lack features (+ can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
 
 This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
@@ -113,12 +113,12 @@ If you are the author of any of the below tools and feel I have misrepresented y
   * Skinner would be good compliment to this system.
 * [Zoo Tools](https://create3dcharacters.com/zoo2/)
   * Large suite of convenience tools/scenes across Maya, that includes rigging & skinning.
-  * Their [Skinning Utilities](https://create3dcharacters.com/maya-tool-skinning-utilities/) tool brings a lot of Maya's tools toegher in one spot, but doesn't have anything for robust skin weight export/import.
+  * Their [Skinning Utilities](https://create3dcharacters.com/maya-tool-skinning-utilities/) tool brings a lot of Maya's tools together in one spot, but doesn't have anything for robust skin weight export/import.
   * Skinner would be a good compliment to this system.
 * Others? Let me know.
 
 # Help
-Please log problems & requests in the **Issues** section of this github.
+Please log problems & requests in the [Issues](https://github.com/AKEric/skinner/issues) section of this github.
  
 I welcome all suggestions & ideas for improvement.  As mentioned above I maintain this tool in my off-hours, and will try to address any issues to the best of my ability.
 
