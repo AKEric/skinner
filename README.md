@@ -6,6 +6,7 @@
   * [Other Features](#other-features)
   * [Usage Examples](#usage-examples)
   * [Why this tool](#why-this-tool)
+  * [Why is it free?](#why-is-it-free?)
   * [Similar Tools](#similar-tools)
 - [Help](#help)
 - [Requirements](#requirements)
@@ -97,6 +98,10 @@ Having built holistic art -> engine pipelines for multiple studios (Visceral/EA,
 The tools that Maya provides lack features (+ can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
 
 This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
+
+## Why is it free?
+
+We all [stand on the shoulders of the giants](https://en.wikipedia.org/wiki/Standing_on_the_shoulders_of_giants) that came before us.  And while I do feel I added some of my own ingenuity to this process (and put *considerable* personal time and effort into it), much of this tech is built on the learnings of so many that came before me.  So it's a gift back to the community that has given me so much.
  
 ## Similar Tools
 If you are the author of any of the below tools and feel I have misrepresented your software in any way, please let me know for correction.
