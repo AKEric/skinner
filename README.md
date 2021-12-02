@@ -176,8 +176,10 @@ print(sp.__file__)
 # Integrating Into Your Pipeline
 All code lives in a ```/skinner``` Python package.  If you don't use git to manage code, you can easily download/extract via the provided zip:  
 * Download a zip of this repro via the green Code button -> Download zip.
+  * I have had reports of the OS declaring this a 'trojan file' : My guess this is some sort of OS boilerplate based on the fact this is Python code that you're grabbing from the web.  You can take my word that this is not virus/trojan software, or just not use it.
 * Open the zip, and extract the ```/skinner``` subdir to a location on your Maya-Python ```sys.path```.
 * It is now available for import & usage in Maya.
+
 
 To get a list of those paths, execute in the Script Editor:
 ```python
