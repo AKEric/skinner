@@ -201,7 +201,7 @@ skinWin.App()
 The App call can take multiple different args during creation, to help integrate your studio’s version control, and point to custom docs.  See more on these subjects below.
 
 ## Tool UI Overview
-The UI is split into three main tabs, discussed below.  At the top, you’ll see your current ‘Window Version’ (W) and ‘Tool Version’ (T).
+The UI is split into three main tabs, discussed below.
 
 ### Import Tab
 ![skinnner_importTab](images/skinnner_importTab.JPG)
