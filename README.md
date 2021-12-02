@@ -365,6 +365,15 @@ All functions & classes are fully doc-stringed.  Please use the Python help func
  
 For example:
 
+Full module help:
+
+```python
+import skinner.utils as skinUtils
+help(skinUtils)
+```
+
+Specific function help:
+
 ```python
 import skinner.core as skinCore
 help(skinCore.exportSkin)
