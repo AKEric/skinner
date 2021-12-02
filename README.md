@@ -444,7 +444,7 @@ skinnedMesh = ["cubeA", "planeA", "planeB"]
 filePath = "C:/temp/maya/skinner/test.sknr"
 ```
 
-Export/Import based on the selected mesh. 
+Export/Import based on the selected mesh.  In all cases, if you omit ```filepPath```, a file browser dialog will be auto-launched for the user.
 
 ```
 # Export:
