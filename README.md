@@ -130,7 +130,7 @@ Please log problems & requests in the [Issues](https://github.com/AKEric/skinner
 I welcome all suggestions & ideas for improvement.  As mentioned above I maintain this tool in my off-hours, and will try to address any issues to the best of my ability.
 
 # Requirements
-* It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible.
+* It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
 * Python 3 (Maya 2022+)
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
@@ -144,9 +144,11 @@ Open cmd shell **as admin** (on Windows at least).
 
 Then line by line:
 
-Install the numpy & scipy packages, one at a time, via pip.  Note, it’s important to call to mayapy.exe specificallyto execute it’s version of pip.
+Install the numpy & scipy packages, one at a time, via pip.  Note, it’s important to call to mayapy.exe specifically to execute it’s version of pip.
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
+```
+```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
 ```
 You can optionally provide a ```–target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
