@@ -6,7 +6,7 @@
   * [Other Features](#other-features)
   * [Usage Examples](#usage-examples)
   * [Why this tool](#why-this-tool)
-  * [Why is it free?](#why-is-it-free?)
+  * [Why is it free?](#why-is-it-free)
   * [Similar Tools](#similar-tools)
 - [Help](#help)
 - [Requirements](#requirements)
