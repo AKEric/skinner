@@ -34,7 +34,7 @@ At high level, the Skinner tool works by exporting & importing ```SkinChunk``` d
 
 Skinner is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.  
 
-By using/installing it you're accepting all repsonsibilities for its usage, and release me from all liability.
+By using/installing it you're accepting all repsonsibilities for its usage, and release me from all liability: See the [License](https://github.com/AKEric/skinner/blob/main/LICENSE.md).
 
 Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
 
