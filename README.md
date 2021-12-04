@@ -71,6 +71,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Supports duplicate mesh names in the Maya scene during import (the tool converts everything to long/absolute paths for import purposes).  
 * Supports duplicate mesh names in the Maya scene during export, but a ```.sknr``` file can't store data for mesh with duplicate names (but you could store different ```.sknr``` files for each).
 * Supports Maya’s linear, dual-quat, and weight-blended 'Skinning Methods':  What state its in during export will be the state applied during import.
+* Not so much a feature, but an FYI:  Skinner only suppots skinCluster node's who's 'Normalize Weights' value is set to 'Interactive' (1): It does not support 'None' (0), or 'Post' (2).  If Skinner encounters such a non-conforming skinCluster, it'll prompt the user to 'auto-convert' it to 'interactive' before the operation is done (v1.0.14).  If the user cancels, no work is done.  Basically: ```skinCluster.normalizeWeights = 1```.
 * Verbose and robust results printed to the Script Editor / returned by the API for your own pipeline’s consumption.
 * Full integration into your teams version control software.
 * Introspection/printing of data in the custom ```.sknr``` file format (binary pickled Python data).
