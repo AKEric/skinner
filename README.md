@@ -345,7 +345,7 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 # Skinner Concepts
   
 ## The .sknr file format
-A ```.sknr``` file is a Python pickled (binary) list of ```SkinChunk``` instances.
+A ```.sknr``` file is a Python [pickled](https://docs.python.org/3/library/pickle.html) (binary) list of ```SkinChunk``` instances.
 
 When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, ```SkinChunk```s that have a mesh name clash with other ```SkinChunk```s are pruned out:  Only the ‘most recently exported’ ```SkinChunk``` will win the battle.  This can allow your team to asselble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
 
