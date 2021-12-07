@@ -295,7 +295,7 @@ UI Elements:
     * Auto Fill : By default, this will be set to the directory of the currently saved scene.  
       * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
       * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
-    * ‘…’ : Browse to a file(s, could be multiple) to import from.
+    * ‘…’ : Browse to a specific file (exiting or not) to export to.
 * **Set To Bindpose:**
   * If this is checked :  Set all exported mesh & their influences to their bindpose before the export.  For each ```dagPose``` node, if for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node, it will be silently skipped.
   * Usually you’d want this checked, but if you’re copying off of some worldspace pose onto some other similar worldspace pose, you’d want it unchecked.
