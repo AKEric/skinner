@@ -51,7 +51,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 ## Import Features
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
-* Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API, you can even add your own logic.
+* Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API (discussed below), you can even add your own custom 'closest point' function these call on.
 * Options to ‘set to bindpose’, build missing influences (joints), and either unbind first, or append to the current skinning on import.
 * Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay.
 * High level import logic path, regardless if you’re importing onto multiple mesh, or some vertex selection:
@@ -233,7 +233,7 @@ UI Elements:
 * **Fallback Skinning Method** (FSM):  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
     * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
-    * Based on the ‘Nearest Neighbor Distance Mult’, generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
+    * Based on the ‘Nearest Neighbor Distance Mult’ (default 2.0), generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
     * Looking within that sphere, find up to the closest ‘Number Closest Neighbors’ target verts. In this example we’ll search for 3 total verts (the closest, + 2 others).
     * Generate distance for each of the target verts found to the source vert : Normalize those distance to all fit from 0 -> 1.0
     * Generate a list of all the influence weights for each of the target verts, and modify their weights based on the normalized distances:  Apply higher priority to closer target verts, lower priority to farther target verts.
@@ -422,17 +422,19 @@ exportSkin(items=None, filePath=None, verbose=True, vcExportCmd=None, vcDepotRoo
  
      Return : bool / None : If any errors, return False. If export successful,
          return True. If the operation is canceled, return None.
-         
+```
+
 ## Common Functions and Classes
 
-```
-The most common functions you’ll interact with in the ```skinner.core.py``` module are:
+The most common functions you’ll interact with are in the ```skinner.core.py``` module:
 * ```exportSkin``` :  This is a higher level wrapper for:
   * ```generateSkinChunks```
   * ```exportSkinChunks```
 * ```importSkin``` : Capture the return from this to get the status of your import in your calling code.  This is a higher level wrapper for:
   * ```importSkinChunks```
-  * ```setWeights``` : The return from this is what is returned by importSkin : Check its docstring for details.
+  * ```setWeights``` : The return from this is what is returned by importSkin : Check its docstring for details.  
+    * This is where you can override the which 'closest point' algorithm is used by either FSM, via the ```closestPointFunc``` arg, if you don't feel the [scipy.spatial.KDTree](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.cKDTree.html) (the default) algorithm is doing a good enough job.  
+    * The built in functions that can be passed to this include ```closestPointKdTree``` (the default) and ```closestPointBruteForce``` : You can see the example function ```closestPointExample``` if you want to write your own and roll it in here.
 * ```test``` : run the test suite
 * ```printWeightFile``` : Print info about the contents of the provided ```.sknr``` file.
 
@@ -442,7 +444,7 @@ And classes:
 
 As mentioned above, the UI code lives in Skinner ```skinner.window.py```
 
-To get information on the ```__init__``` args for that class:
+To get information on the ```__init__``` args for that Window class:
 ```python
 import skinner.window as skinWin
 help(skinWin.App.__init__)
