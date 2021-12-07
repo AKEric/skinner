@@ -227,9 +227,11 @@ Based on the mesh:vert’s being imported on:
 
 UI Elements:
 * **Pathing**
-  *  : The path of the ```.sknr``` file(s) to import, based on:
-  * Auto Fill : By default, this will be set to the directory of the currently saved scene.  You can update this with custom subdirs via the option in the Extras tab.
-  * ‘…’ : Browse to a file(s) to import from.
+  * Path: The path of the ```.sknr``` file(s) to import, based on:
+    * Auto Fill : By default, this will be set to the directory/filename of the currently saved scene.  
+      * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
+      * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
+    * ‘…’ : Browse to a file(s, could be multiple) to import from.
 * **Fallback Skinning Method** (FSM):  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
     * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
@@ -254,13 +256,17 @@ UI Elements:
   * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
 * **Build Missing Influences:**
   * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  Note, while their worldspace transformation will match that stored in the ```SkinChunk``` data, their translate\rotate\jointOrient values could be different based on parenting.
+  * If this is unchecked, and there are missing influences, the tool will error.
 * **Set To Bindpose:**
-  * If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or if ‘Unbind First’ is checked, below).  If for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
+  * If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or before the ‘Unbind First’ operation is ran, if checked  below).  If for any reason the bindpose can’t be set for a given ```dagPose``` node, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
 * **Unbind First?**
-  * If this is checked (and after ‘Set To Bindpose’ happens), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked?
-    * Check it: If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how does all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
-    * Uncheck it: If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
-    * Uncheck it: If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
+  * If this is checked (and after ‘Set To Bindpose’ happens, if checked), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked? : 
+    * Check it: 
+      * If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  
+      * If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how does all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
+    * Uncheck it: 
+      * If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
+      * If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
 * **Force From ```UberChunk```?**
   * Mostly for testing:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
 * **Select Instead Of Skin:**
@@ -285,12 +291,14 @@ The export tab acts on the selected (in any combination) verts, mesh, joints, tr
 
 UI Elements:
 * **Pathing:**
-  * Path : The path of the ```.sknr``` file(s) to import, based on:
-  * Auto Fill : By default, this will be set to the directory of the currently saved scene.  You can update this with custom subdirs via the option in the Extras tab.
-  * ‘…’ : Browse to a file(s) to import from.
+  * Path : The path of the ```.sknr``` file to export, based on:
+    * Auto Fill : By default, this will be set to the directory of the currently saved scene.  
+      * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
+      * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
+    * ‘…’ : Browse to a file(s, could be multiple) to import from.
 * **Set To Bindpose:**
-  * If this is checked :  Set all mesh part of the export to their bindpose before the export.  If for any reason the bindpose can’t be set, there will be an error.
-  * Usually you’d want this checked, but if you’re copying off of some pose onto some other similar pose, you’d want it unchecked.
+  * If this is checked :  Set all exported mesh & their influences to their bindpose before the export.  For each ```dagPose``` node, if for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node, it will be silently skipped.
+  * Usually you’d want this checked, but if you’re copying off of some worldspace pose onto some other similar worldspace pose, you’d want it unchecked.
 * **Exporting:**
   * Export To Path : Export to the path provided above.
   * Export Temp : Export to a temp file, that can be imported via ‘Import Temp’ in the Import tab.
@@ -326,10 +334,10 @@ skinWin.App(vcExecCmd="import myCompany.myP4Tool as p4Tool; p4Tool.manageFile('%
 That way each individual user won’t have to enter the values… and get them wrong…
 
 **IMPORTANT :**
-* As shown in the UI:  If you’re using Perforce for version control (and this could equally apply to other VC apps like git, subversion, mercurial, etc, but they are untested) : You need to tell your VC software that the ```.sknr``` file type is binary.
-* By default, many will add new file types as ascii, and this will corrupt the ```.sknr``` data once on the server.  Your local file will work fine, but anyone else that pulls down a version (or if you sync to someone else’s version), it will be broken.
+* As shown in the UI:  If you’re using Perforce for version control (and this could equally apply to other VC apps like git, subversion, mercurial, etc, but they are untested) : You need to tell your VC software that the ```.sknr``` file type is ```binary```.
+* By default, many will add new file types as ```ascii```, and this will corrupt the ```.sknr``` data once on the server.  Your local file will work fine, but anyone else that pulls down a version (or if you sync to someone else’s version), it will be broken.
 * For Perforce, see the [p4 typemap command](https://www.perforce.com/manuals/v19.2/cmdref/Content/CmdRef/p4_typemap.html) to switch these types, or talk to your VC administrator for a site-wide update.
-* Remember: When you add a new ```.sknr``` file to your VC software, before you submit, confirm its file type is binary!
+* REMEMBER: When you add a new ```.sknr``` file to your VC software, before you submit, confirm its file type is ```binary```!
 
 ### Extras Tab
 ![skinnner_extrasTab](images/skinnner_extrasTab.JPG)
@@ -345,7 +353,9 @@ That way each individual user won’t have to enter the values… and get them w
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
 * **‘Auto-Fill’ Subdir :**
-  *  If this is populated, this is a subdir(s) that will be appended to the ‘Auto-Fill’ buttons in the Export & Import tabs.  For example, if in your production, you always save skin weights in a subdir relative to the current scene, this field makes it easy to update the ‘Auto-Fill’ button with that subdir.
+  *  If this is populated, this is a subdir(s, could as deep as needed) that will be appended to the '<- Auto-Fill' buttons in the Export & Import tabs.  
+  *  This is handy if in your production, you always save skin weights in a subdir relative to the current scene:  This field makes it easy to update the ‘Auto-Fill’ button with that subdir.  
+  *  For example, Let's say that subdir is called ```rigData```, and eveyrthing rigging & skinning related goes in there : If your current scene is saved here ```c:\path\to\my\awesome\file.mb```, when you press the 'Auto Fill' button, the resultant path would be : ```c:\path\to\my\awesome\rigData\file.sknr```
 * Print sknr file info…
   *  The ```.sknr``` file format is binary : It’s pickled Python data.  Because of that, it’s not human readable.  This section can be used to browse to, and print information in a ```.sknr``` file to the Script Editor, based on the checkboxes set, and the min/max print indices (to help limit how much info is printed for large files).
 
