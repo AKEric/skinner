@@ -148,12 +148,13 @@ Open cmd shell **as admin** (on Windows at least).
 
 Then line by line:
 
-Install the numpy & scipy packages, one at a time, via pip.  Note, it’s important to call to mayapy.exe specifically to execute it’s version of pip.
-```
-> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
-```
+Install the ```scipy``` & ```numpy``` packages, one at a time, via ```pip```.  Note, it’s important to call to ```mayapy.exe``` specifically to execute it’s version of ```pip```.
+Also, technically you only need to install ```scipy```, since it should auto-pull in the numpy dependencies it requires.
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
+```
+```
+> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
 ```
 You can optionally provide a ```–target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
 
