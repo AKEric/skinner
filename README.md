@@ -50,7 +50,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 ## Import Features
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
-* Robust logic tree when importing, based on the ‘Fallback Skinning Method’ (**FSM**) defined: It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or ‘Closest Point’.
+* Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API, you can even add your own logic.
 * Options to ‘set to bindpose’, build missing influences (joints), and either unbind first, or append to the current skinning on import.
 * Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay.
 * High level import logic path, regardless if you’re importing onto multiple mesh, or some vertex selection:
@@ -229,7 +229,7 @@ UI Elements:
   *  : The path of the ```.sknr``` file(s) to import, based on:
   * Auto Fill : By default, this will be set to the directory of the currently saved scene.  You can update this with custom subdirs via the option in the Extras tab.
   * ‘…’ : Browse to a file(s) to import from.
-* **Fallback Skinning Method** (FSM):  A FSM is used when the vert count/order of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  If they’re the same vert count / order, then the weights are imported 1:1 with no interpolation.  A FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match.
+* **Fallback Skinning Method** (FSM):  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
     * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
     * Based on the ‘Nearest Neighbor Distance Mult’, generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
@@ -238,20 +238,23 @@ UI Elements:
     * Generate a list of all the influence weights for each of the target verts, and modify their weights based on the normalized distances:  Apply higher priority to closer target verts, lower priority to farther target verts.
     * Apply those weights to the source vert.
   * Closest Point : This is a simple system, that will find the closest target vert to source, and apply it’s saved weights.
+  * Via the API calls though, you can add your own solutions if you don't like these (the UI won't support it without an update, but the back end will).
 * **Use Vert Normal Filter**
-  * If enabled, if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  The default is 0 : This means, match any target vert who’s normal is on the same hemisphere as the source.  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.
+  * If enabled, and if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  
+  * Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  
+  * The default is 0 : This means, match any target vert who’s normal is on the same hemisphere as the source.  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.
 * **Post Smooth Steps:**
   * If a FSM is used, and the vert count of the source mesh being imported onto is greater than the target ```SkinChunk```/```UberChunk``` point cloud being loaded from:  Smooth the resultant skinning based on the number of steps.   This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
-  * Note, this only performs the smooth on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weight as-is.  Also, if the vert count of the mesh being imported onto is greater than the ```SkinChunk```/```UberChunk``` point cloud being loaded from, no smoothing is performed, since this tends to generate poor results.  Set this value to 0 to disable entirely.
+  * Note, this only performs the smooth on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weight 1:1 as-is.  Also, if the vert count of the mesh being imported onto is greater than the ```SkinChunk```/```UberChunk``` point cloud being loaded from, no smoothing is performed, since this tends to generate poor results.  Set this value to 0 to disable entirely.
 * **Load By Vert Count / Order?**
-  * If a FSM is triggered to be used, and this is checked: The tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
+  * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
 * **Build Missing Influences:**
   * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  Note, while their worldspace transformation will match that stored in the ```SkinChunk``` data, their translate\rotate\jointOrient values could be different based on parenting.
 * **Set To Bindpose:**
-  * If this is checked, and if you’re importing  onto mesh that is already skinned:  Set it to bindpose before the import (or if ‘Unbind First’ is checked, below).  If for any reason the bindpose can’t be set, there will be an error.  If there is no dagPose node for that skinCluster/influences, it will be skipped without error.
+  * If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or if ‘Unbind First’ is checked, below).  If for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
 * **Unbind First?**
   * If this is checked (and after ‘Set To Bindpose’ happens), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked?
-    * Check it: If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how doe all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
+    * Check it: If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how does all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
     * Uncheck it: If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
     * Uncheck it: If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
 * **Force From ```UberChunk```?**
@@ -345,21 +348,23 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 # Skinner Concepts
   
 ## The .sknr file format
-A ```.sknr``` file is a Python [pickled](https://docs.python.org/3/library/pickle.html) (binary) list of ```SkinChunk``` instances.
+A ```.sknr``` file is a Python [pickled](https://docs.python.org/3/library/pickle.html) (binary) ```list``` of ```SkinChunk``` instances.
 
 When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, ```SkinChunk```s that have a mesh name clash with other ```SkinChunk```s are pruned out:  Only the ‘most recently exported’ ```SkinChunk``` will win the battle.  This can allow your team to asselble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
 
 ## SkinChunks and UberChunks
 When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
 * The leaf mesh name it was saved for.
+* The total number of verts on that mesh at time of save.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
 * The influence joint list.  Plus their worldspace transforms, and parents.
 * The worldspace positions for each target vert exported.
 * The influence weights for each target vert exported.
 * The ‘blend weights’ for each target vert exported, if the ‘skinning method’ is ‘weight-blended’.
-* The normal for each target vert exported.
-* A sample of vert neighbors.
+* The worldspace normal for each target vert exported.
+* A sample of vert neighbors based on input args.
 * The ‘skinning method’ : Linear, dual-quat, weight-blended.
+* The date it was saved.
 
 A ```.sknr``` file can hold one or more ```SkinChunk```s in it.   When importing ```.sknr``` files, multiple can be selected.  In that case, all the ```SkinChunk```s are merged together in a big list… but what happens if two ```SkinChunk```s are based on the same mesh name? The ‘newer’ (most recently exported) ```SkinChunk``` wins.
 
@@ -417,7 +422,7 @@ exportSkin(items=None, filePath=None, verbose=True, vcExportCmd=None, vcDepotRoo
      Return : bool / None : If any errors, return False. If export successful,
          return True. If the operation is canceled, return None.
 ```
-The most common functions you’ll interact with in the core module are:
+The most common functions you’ll interact with in the ```skinner.core.py``` module are:
 * ```exportSkin``` :  This is a higher level wrapper for:
   * ```generateSkinChunks```
   * ```exportSkinChunks```
@@ -426,6 +431,10 @@ The most common functions you’ll interact with in the core module are:
   * ```setWeights``` : The return from this is what is returned by importSkin : Check its docstring for details.
 * ```test``` : run the test suite
 * ```printWeightFile``` : Print info about the contents of the provided ```.sknr``` file.
+
+And classes:
+* ```SkinChunk``` : The ```getByMeshName``` and ```getByVertCountOrder``` static methods are very handy
+* ```UberChunk``` 
 
 As mentioned above, the UI code lives in Skinner ```skinner.window.py```
 
