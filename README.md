@@ -19,7 +19,8 @@
     + [Extras Tab](#extras-tab)
 - [Skinner Concepts](#skinner-concepts)
   * [The .sknr file format](#the-sknr-file-format)
-  * [SkinChunks and UberChunks](#skinchunks-and-uberchunks)
+  * [SkinChunks](#skinchunks)
+  * [UberChunks](#uberchunks)
 - [Using the Skinner API](#using-the-skinner-api)
   * [Accessing Help](#accessing-help)
   * [Common Functions and Classes](#common-functions-and-classes)
@@ -44,7 +45,7 @@ If you have interest in purchasing the source for your production, please contac
 I have a full time job, this is a side project:  I will attempt to address all issues outside of work hours to the best of my abilities.
 
 ## Export Features
-* Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ```SkinChunk``` information for storage.
+* Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ```SkinChunk``` instances for storage.
 * Can export as many mesh/verts (as ```SkinChunk``` data) to a single ```.sknr``` file as needed.
 * Can ‘set to bindpose’ before export, or not.
 
@@ -367,9 +368,10 @@ A ```.sknr``` file is a Python [pickled](https://docs.python.org/3/library/pickl
 
 When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, ```SkinChunk```s that have a mesh name clash with other ```SkinChunk```s are pruned out:  Only the ‘most recently exported’ ```SkinChunk``` will win the battle.  This can allow your team to asselble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
 
-## SkinChunks and UberChunks
+## SkinChunks
 When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
 * The leaf mesh name it was saved for.
+* The version of the Skinner tool that was used during export.
 * The total number of verts on that mesh at time of save.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
 * The influence joint list.  Plus their worldspace transforms, and parents.
@@ -384,6 +386,8 @@ When you interactively select ‘items’ for export, regardless of what is sele
 A ```.sknr``` file can hold one or more ```SkinChunk```s in it.   When importing ```.sknr``` files, multiple can be selected.  In that case, all the ```SkinChunk```s are merged together in a big list… but what happens if two ```SkinChunk```s are based on the same mesh name? The ‘newer’ (most recently exported) ```SkinChunk``` wins.
 
 A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh.
+
+## UberChunks
 
 When importing on mesh, the tool tries to find a ```SkinChunk``` that has a name match with it.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match in the skinChunks provided.
 
