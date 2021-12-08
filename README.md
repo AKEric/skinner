@@ -371,7 +371,7 @@ When importing multiple ```.sknr``` files at the same time, those lists are merg
 ## SkinChunks
 When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
 * The leaf mesh name it was saved for.
-* The version of the Skinner tool that was used during export.
+* The version of the Skinner tool that was used during export (as of 1.0.16).
 * The total number of verts on that mesh at time of save.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
 * The influence joint list.  Plus their worldspace transforms, and parents.
