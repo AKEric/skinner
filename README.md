@@ -116,7 +116,7 @@ If you are the author of any of the below tools and feel I have misrepresented y
   * [Weight Maps Export](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-7681F977-32D2-4FE4-A83D-E1C9FB2B402F-htm.html), [Weight Map Import](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-DD0E4715-294F-43EF-A70B-1EAD8389CA0E-htm.html)
     * This export skin weights as 2d images, but is entirely predicated on good/non-overlapping UV’s.  Skinner has substantially better import options available, and has no UV dependencies.
 * [ngSkinTools](https://www.ngskintools.com/)
-  * Provides an interesting way to paint skin weights, but provides a limited featureset for exporting/importing of those weights.
+  * Provides robust layers-based solution for painting skin weights.  v1 has a limited featureset for exporting/importing of those weights.  But the [v2 API](https://www.ngskintools.com/documentation/v2/api/transfer/) seems to have expanded on this signifiantly.  Reading the v2 API docs, Skinner still has signifiantly more overall features.
   * Skinner would be a good compliment to this system.
 * [mGear](http://www.mgear-framework.com/)
   * A robust procedural rigging solution, also includes code for skin weight export & import.
