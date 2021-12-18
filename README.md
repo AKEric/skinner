@@ -214,7 +214,7 @@ The App call can take multiple different args during creation, to help integrate
 The UI is split into three main tabs, discussed below.
 
 ### Import Tab
-![skinnner_importTab](images/skinnner_importTab.JPG)
+![skinner_importTab](images/skinner_importTab.JPG)
 The import tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes. They’re all converted to mesh:vert data, that is compared against the imported ```SkinChunk``` data:
 
 * If mesh are selected:  All their verts are included.
@@ -283,7 +283,7 @@ UI Elements:
   * Import Temp : Import from the last temp ```.sknr``` file saved by the ‘Export Temp’ button in the Export tab.
   
 ### Export Tab
-![skinnner_exportTab](images/skinnner_exportTab.JPG)
+![skinner_exportTab](images/skinner_exportTab.JPG)
 The export tab acts on the selected (in any combination) verts, mesh, joints, transform/group nodes: All of this is converted in the mesh:vert ```SkinChunk``` data during export.
 
 * If mesh are selected:  All their verts are included.
@@ -342,7 +342,7 @@ That way each individual user won’t have to enter the values… and get them w
 * REMEMBER: When you add a new ```.sknr``` file to your VC software, before you submit, confirm its file type is ```binary```!
 
 ### Extras Tab
-![skinnner_extrasTab](images/skinnner_extrasTab.JPG)
+![skinner_extrasTab](images/skinner_extrasTab.JPG)
 * **Run the ‘skinner test suite’?**
   * This runs a unit test on the skinner tool, generating a new scene, auto exporting/importing ```.sknr``` weights as a test.
   * Press this button to test the tool any time!  Check the Script Editor for results.
