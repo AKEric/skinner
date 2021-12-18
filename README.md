@@ -249,7 +249,8 @@ UI Elements:
 * **Use Vert Normal Filter**
   * If enabled, and if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  
   * Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  
-  * The default is 0.75 : This means, match any target vert who’s normal is only 25% different from the source (1.0 - 0.75 = 0.25).  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.  
+  * The default is 0.75 : This means, match any target vert who’s normal is less than 25 deg different from the source (1.0 - 0.75 = 0.25).  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.  
+  * There is no 'one size fits all' value that will work here, it's entirely based on the topology of the current mesh being imported onto, and what was exported from, so some experimentation may be needed.
   * In the below example, I show an example where a pair of 'pants' that have extremely overlapping mesh are exported. Then imported onto a new pant leg with the vert normal filter turned off, then on, to show how this can reduce stretching:
 ![skinner_importTab](images/vertNormalFilter.gif)
 * **Post Smooth Steps:**
