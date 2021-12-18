@@ -47,14 +47,16 @@ I have a full time job, this is a side project:  I will attempt to address all i
 ## Export Features
 * Can export based on any combination of mesh/joint/vert/transform selection : It’s all converted into per-mesh ```SkinChunk``` instances for storage.
 * Can export as many mesh/verts (as ```SkinChunk``` data) to a single ```.sknr``` file as needed.
-* Can ‘set to bindpose’ before export, or not.
+* Exports both the current worldspace positions/normals for the provided SkinChunk verts, **and** (as of 1.1.0) the pre-deformed positions/normals (via intermediatObject query).  This allows the export to be done without needing to set the asset to the bindpose.
+* Can ‘set to bindpose’ before export, or not. Generally not needed, but optional.
 
 ## Import Features
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API (discussed below), you can even add your own custom 'closest point' function these call on.
-* Options to ‘set to bindpose’, build missing influences (joints), and either unbind first, or append to the current skinning on import.
-* Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay.
+* Options to build missing influences (joints), and either unbind first, or append to the current skinning on import.
+* Option to 'Import Using Pre-Deformed Shape Positions:  This allows for skinning to be loaded onto an asset that is in some deformed pose, without needing to set it to bindpose first.  But there is an option to 'Set To Bindpose' if desired, but generally isn't needed.
+* Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay if there was overlapping mesh during export.
 * High level import logic path, regardless if you’re importing onto multiple mesh, or some vertex selection:
   * Does a leaf mesh name match a ```SkinChunk``` name?
     * Yes
@@ -248,6 +250,8 @@ UI Elements:
   * If enabled, and if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  
   * Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  
   * The default is 0 : This means, match any target vert who’s normal is on the same hemisphere as the source.  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.
+  * In the below example, I show an example where a pair of 'pants' that have extremely overlapping mesh are exported. Then imported onto a new pant leg with the vert normal filter turned off, then on, to show how this can reduce stretching:
+![skinner_importTab](images/vertNormalFilter.gif)
 * **Post Smooth Steps:**
   * If a FSM is used, based on the below conditions, a smoothing pass can be ran to improve the results. 
   * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
@@ -259,8 +263,12 @@ UI Elements:
 * **Build Missing Influences:**
   * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  Note, while their worldspace transformation will match that stored in the ```SkinChunk``` data, their translate\rotate\jointOrient values could be different based on parenting.
   * If this is unchecked, and there are missing influences, the tool will error.
+* **Import Using Pre-Deformed Shape Positions?**
+  * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in an pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unecesary.  
+  * In Maya, the term for the 'pre-deformed' mesh shape node is the 'intermediate object'.  The below gif shows their relationship to the deformation history, and how to enable/show and disable/hide them.  The 'green' mesh is the pre-deformed shape / intermedite object (the mesh who's name ends in 'Orig') that is queried both at SkinChunk export time, and during import, if this options is checked:
+![skinner_importTab](images/preDeformedShape.gif)
 * **Set To Bindpose:**
-  * If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or before the ‘Unbind First’ operation is ran, if checked  below).  If for any reason the bindpose can’t be set for a given ```dagPose``` node, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
+  * If 'Import Using Pre-Deformed Shape Positions' is checked, this should be unchecked.  If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or before the ‘Unbind First’ operation is ran, if checked  below).  If for any reason the bindpose can’t be set for a given ```dagPose``` node, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
 * **Unbind First?**
   * If this is checked (and after ‘Set To Bindpose’ happens, if checked), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked? : 
     * Check it: 
@@ -270,9 +278,9 @@ UI Elements:
       * If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
       * If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
 * **Force From ```UberChunk```?**
-  * Mostly for testing:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
+  * Mostly for debugging:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
 * **Select Instead Of Skin:**
-  * Mostly for testing : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
+  * Mostly for debugging : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
 * **Print Import Overview:**
   * In addition to ‘verbose logging’ that can be found in the Extras tab:  If this is checked, an ‘overview’ of the import will be printed to the Script Editor.  It has two modes that will change how the data is printed.  It should be noted that regardless of the mode picked, it will group the data by successful/unsuccessful import:
   * By Import Type: This will group the overview by the solution used to import the weights : by vert ID, by FSM, etc.
@@ -375,10 +383,12 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * The total number of verts on that mesh at time of save.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
 * The influence joint list.  Plus their worldspace transforms, and parents.
-* The worldspace positions for each target vert exported.
+* Both the worldspace position for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace positions (from the intermediateObject).
+* Both the worldspace normal for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace normals (from the intermediateObject).
+* If there is valid 'pre-deformed' point/normal data to query (per the above two bullets): If the mesh is in the bindpose during export, this extra data isn't stored, since it's the same as the current worldspace positions, and is redundant/unecessary.
 * The influence weights for each target vert exported.
 * The ‘blend weights’ for each target vert exported, if the ‘skinning method’ is ‘weight-blended’.
-* The worldspace normal for each target vert exported.
+* The influence weights for each target vert exported.
 * A sample of vert neighbors based on input args.
 * The ‘skinning method’ : Linear, dual-quat, weight-blended.
 * The date it was saved.
