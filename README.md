@@ -263,8 +263,9 @@ UI Elements:
 * **Load By Vert Count / Order?**
   * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
 * **Build Missing Influences:**
-  * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  
+  * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning. If the mesh you're importing onto is already skinned, this will force it to go to the bindpose first. 
   * They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  
+  * Since the user has the option of **not** exporting Skinner data in the bindpose, if the tool detects for this at time of export, it will instead store the value in the joint's ```bindPose``` attr, which is the worldspace matrix at time of skinning.  But this value is only valid if the joint is connected to a ```dagPose``` node (users could delete them), so if that is missing, and it's not in the bind pose, the existing worldspace matrix is used, which is probably not what yout want, but all we can query under the circumstances.
   * The tool wil do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
     * Generate every joint needed (parented to the world), set the stored rotate order, and apply its stored worldspace matrix.
     * Look for the stored parent, and parent it if found.
@@ -317,7 +318,7 @@ UI Elements:
     * ‘…’ : Browse to a specific file (exiting or not) to export to.
 * **Set To Bindpose:**
   * If this is checked :  Set all exported mesh & their influences to their bindpose before the export.  For each ```dagPose``` node, if for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node, it will be silently skipped.
-  * Usually you’d want this checked, but if you’re copying off of some worldspace pose onto some other similar worldspace pose, you’d want it unchecked.
+  * Usually you’d want this checked, since it will store out the accurate worldspace and local transforms of the joint influences, which is handy if they need rebuilt during import.  But if you’re copying off of some worldspace pose onto some other similar worldspace pose (and don't have concerns about missing influences needing be created), you’d want it unchecked.
 * **Exporting:**
   * Export To Path : Export to the path provided above.
   * Export Temp : Export to a temp file, that can be imported via ‘Import Temp’ in the Import tab.
@@ -395,6 +396,7 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * Both the worldspace position for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace positions (from the intermediateObject).
 * Both the worldspace normal for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace normals (from the intermediateObject).
 * If there is valid 'pre-deformed' point/normal data to query (per the above two bullets): If the mesh is in the bindpose during export, this extra data isn't stored, since it's the same as the current worldspace positions, and is redundant/unecessary.
+* Whether or not it's in the bindpose when the SkinChunk is created (v1.1.1).
 * The influence weights for each target vert exported.
 * The ‘blend weights’ for each target vert exported, if the ‘skinning method’ is ‘weight-blended’.
 * The influence weights for each target vert exported.
