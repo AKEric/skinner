@@ -54,7 +54,8 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API (discussed below), you can even add your own custom 'closest point' function these call on.
-* Options to build missing influences (joints), and either unbind first, or append to the current skinning on import.
+* Options to build missing influences (joints), parenting them into existing hierarchies with parent-matched names, or build the joint hierarchy from scratch preserving the original transformational values / attrs / rotate order.
+* Can either set to bindpose & unbind pre-existing skinning first, or append to the current skinning (in any pose) on import (see next bullet).
 * Option to 'Import Using Pre-Deformed Shape Positions:  This allows for skinning to be loaded onto an asset that is in some deformed pose, without needing to set it to bindpose first.  But there is an option to 'Set To Bindpose' if desired, but generally isn't needed.
 * Can import weights applying a ‘vert normal filter’ that aids in keeping ‘stretching’ verts at bay if there was overlapping mesh during export.
 * High level import logic path, regardless if you’re importing onto multiple mesh, or some vertex selection:
@@ -264,8 +265,12 @@ UI Elements:
 * **Build Missing Influences:**
   * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning.  
   * They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  
-  * Note, while their worldspace transformation will match that stored in the ```SkinChunk``` data, their translate\rotate\jointOrient values could be different based on parenting.
-  * Technically, this can be used to rebuild the entire skeletal hierarchy that was exported, in a scene with no matching skeleton.  But I woudln't recomend this as the default usage, since as mentioned above, you could end up with different transform values applied, which may/may not have impact on your production.
+  * The tool wil do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
+    * Generate every joint needed (parented to the world), set the stored rotate order, and apply its stored worldspace matrix.
+    * Look for the stored parent, and parent it if found.
+    * After parenting, apply the original/stored local transformations (translate, rotate, scale, rotateAxis, jointOrient).
+    * Compare the new worldspace matrix vs previous : If they're the same, leave the local transforms as is and continue.  If they're different, reset the stored world matrix.
+  * Technically, this can be used to rebuild the entire skeletal hierarchy that was exported, in a scene with no matching skeleton.  In general you can find good success with this, but (if auto-created by this tool) always check your root joint's transformation values vs whatever is your standard, since while it will have the correct worldspace transformations applied to it, it's local values may be off-standard if using a shared skeleton.
   * If this is unchecked, and there are missing influences, the tool will error.
 * **Import Using Pre-Deformed Shape Positions?**
   * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in any pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unecesary.  
@@ -381,12 +386,12 @@ A ```.sknr``` file is a Python [pickled](https://docs.python.org/3/library/pickl
 When importing multiple ```.sknr``` files at the same time, those lists are merged together. During the merge, ```SkinChunk```s that have a mesh name clash with other ```SkinChunk```s are pruned out:  Only the ‘most recently exported’ ```SkinChunk``` will win the battle.  This can allow your team to assemble ‘weight depots’ of data, and you can be assured regardless of what is selected for import, only the most recent data will make it through.
 
 ## SkinChunks
-When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert chunks of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
-* The leaf mesh name it was saved for.
+When you interactively select ‘items’ for export, regardless of what is selected, ultimately they’re turned into mesh:vert 'chunks' of data.  Each mesh:vert chunk being exported turns into a ```SkinChunk```.  A ```SkinChunk``` stores things like:
+* The leaf mesh shape (not transform) name it was saved for.
 * The version of the Skinner tool that was used during export (as of 1.0.16).
 * The total number of verts on that mesh at time of save.
 * The specific target vert IDs on that mesh being exported (could be a subset, or for the whole mesh).
-* The influence joint list.  Plus their worldspace transforms, and parents.
+* The influence joint list.  Plus their worldspace transforms, parents, (and as of 1.1.1) local transform values and rotate orders.
 * Both the worldspace position for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace positions (from the intermediateObject).
 * Both the worldspace normal for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace normals (from the intermediateObject).
 * If there is valid 'pre-deformed' point/normal data to query (per the above two bullets): If the mesh is in the bindpose during export, this extra data isn't stored, since it's the same as the current worldspace positions, and is redundant/unecessary.
@@ -395,15 +400,13 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * The influence weights for each target vert exported.
 * A sample of vert neighbors based on input args.
 * The ‘skinning method’ : Linear, dual-quat, weight-blended.
-* The date it was saved.
+* The date it was saved, and the name of the user.
 
-A ```.sknr``` file can hold one or more ```SkinChunk```s in it.   When importing ```.sknr``` files, multiple can be selected.  In that case, all the ```SkinChunk```s are merged together in a big list… but what happens if two ```SkinChunk```s are based on the same mesh name? The ‘newer’ (most recently exported) ```SkinChunk``` wins.
-
-A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh.
+A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh, where each point represents an original vertex position (and other data) in worldspace associated with that mesh shape name.
 
 ## UberChunks
 
-When importing on mesh, the tool tries to find a ```SkinChunk``` that has a name match with it.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match in the skinChunks provided.
+When importing on mesh (shape nodes), the tool tries to find a ```SkinChunk``` that has a name match with a mesh shape.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match (or, based on the import options, no vert count/order match) in the skinChunks provided.
 
 # Using the Skinner API
 
