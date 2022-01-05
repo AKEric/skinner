@@ -376,13 +376,14 @@ That way each individual user won’t have to enter the values… and get them w
 ```python
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
+* **Verbose Logging** : If this is checked, print information to the Script Editor. If unchecked, mostly only Errors and Warnings will show up.
 * **‘Auto-Fill’ Subdir :**
   *  If this is populated, this is a subdir(s, could as deep as needed) that will be appended to the '<- Auto-Fill' buttons in the Export & Import tabs.  
   *  This is handy if in your production, you always save skin weights in a subdir relative to the current scene:  This field makes it easy to update the ‘Auto-Fill’ button with that subdir.  
   *  For example, Let's say that subdir is called ```rigData```, and eveyrthing rigging & skinning related goes in there : If your current scene is saved here ```c:\path\to\my\awesome\file.mb```, when you press the 'Auto Fill' button, the resultant path would be : ```c:\path\to\my\awesome\rigData\file.sknr```
-* Print sknr file info…
+* **Skinner Package Path** : (v1.1.3) Just an FYI to tell the user where the Skinner tool is installed.
+* **Print sknr file info…**
   *  The ```.sknr``` file format is binary : It’s pickled Python data.  Because of that, it’s not human readable.  This section can be used to browse to, and print information in a ```.sknr``` file to the Script Editor, based on the checkboxes set, and the min/max print indices (to help limit how much info is printed for large files).
-
 # Skinner Concepts
   
 ## The .sknr file format
