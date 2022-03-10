@@ -258,12 +258,6 @@ UI Elements:
   * There is no 'one size fits all' value that will work here, it's entirely based on the topology of the current mesh being imported onto, and what was exported from, so some experimentation may be needed.
   * In the below example, I show an example where a pair of 'pants' that have extremely overlapping mesh are exported. Then imported onto a new pant leg with the vert normal filter turned off, then on, to show how this can reduce stretching:
 ![skinner_importTab](images/vertNormalFilter.gif)
-* **Post Smooth Steps:**
-  * If a FSM is used, based on the below conditions, a smoothing pass can be ran to improve the results. 
-  * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
-  * Continuing the logic, if the vert count of the source mesh is less than that of the target ```SkinChunk```/```UberChunk```, then no smoothing will be performed, since we have a larger target sample-set than we do source verts.
-  * Note, if smoothing is performed, it only acts on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weights 1:1 as-is.   
-  * Set this value to 0 to disable entirely.
 * **Load By Vert Count / Order?**
   * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
 * **Build Missing Influences:**
@@ -295,6 +289,16 @@ UI Elements:
   * Mostly for debugging:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
 * **Select Instead Of Skin:**
   * Mostly for debugging : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
+* **Smooth Steps:**
+  * If a FSM is used, based on the below conditions, a smoothing pass can be ran to improve the results. 
+  * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
+  * Continuing the logic, if the vert count of the source mesh is less than that of the target ```SkinChunk```/```UberChunk```, then no smoothing will be performed, since we have a larger target sample-set than we do source verts.
+  * Note, if smoothing is performed, it only acts on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weights 1:1 as-is.   
+  * Set this value to 0 to disable entirely.  How this acts is also modifed by the 'Weight Difference Threshold', below:
+* **Weight Difference Threshold:** : Added 1.1.7
+  * If the 'Smooth Steps' (above) is a positive value, and those conditions are met:  Only verts that have a 'difference in weights' greater than this value will be smoothed.
+  * The default is 0.25 : This means, that if abs(vertWeightA - vertWeightB) > 0.25, that vert's weights will be smoothed.
+  * The **smaller** you make this value, the more verts will be smoothed, and the **larger** you make this value, the fewer verts will be smoothed.
 * **Print Import Overview:**
   * In addition to ‘verbose logging’ that can be found in the Extras tab:  If this is checked, an ‘overview’ of the import will be printed to the Script Editor.  It has two modes that will change how the data is printed.  It should be noted that regardless of the mode picked, it will group the data by successful/unsuccessful import:
   * By Import Type: This will group the overview by the solution used to import the weights : by vert ID, by FSM, etc.
