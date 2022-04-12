@@ -144,6 +144,7 @@ I welcome all suggestions & ideas for improvement.  As mentioned above I maintai
 # Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
 * Python 3 (Maya 2022+)
+  * This will not work on older versions of Maya running Python 2.7
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
   * [Scipy](https://scipy.org/)
