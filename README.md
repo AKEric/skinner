@@ -559,7 +559,7 @@ skinCore.importTempSkin()
 
 # About Me
 
-Sr Technical Art Director at [31st Union](https://thirtyfirstunion.com/) (2K)
+Sr Director of Techart  at [31st Union](https://thirtyfirstunion.com/) (2K)
 
 https://www.linkedin.com/in/pavey/
 
