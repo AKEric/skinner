@@ -41,8 +41,10 @@ As of Feb 2023, Skinner has been open sourced.  But the developer would still ap
 
 Please 'buy me a coffee' per the below suggested tipping rate:  https://www.buymeacoffee.com/akeric
 
-* Student / Hobbiest / Indy dev : Free!  (but if you want to donate, I won't turn you down)
+* Student / Hobbyist / Indy dev : Free!  (but if you want to donate, I won't turn you down)
 * Any other production : $25 a user.
+
+It accepts Google Pay, Apple Pay, and Credit Card.
 
 ## Disclaimers
 
