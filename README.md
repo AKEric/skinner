@@ -1,12 +1,12 @@
 **Table Of Contents**
 - [Overview](#overview)
   * [Disclaimers](#disclaimers)
+  * [Donate For Usage](#donate-for-usage)
   * [Export Features](#export-features)
   * [Import Features](#import-features)
   * [Other Features](#other-features)
   * [Usage Examples](#usage-examples)
   * [Why this tool](#why-this-tool)
-  * [Why is it free?](#why-is-it-free)
   * [Similar Tools](#similar-tools)
 - [Help](#help)
 - [Requirements](#requirements)
@@ -34,6 +34,15 @@
 Skinner is a tool for [Autodesk Maya](https://www.autodesk.com/products/maya/overview) designed to make "exporting and importing skin weights on polygonal mesh fast, easy, and full featured".  Having both a consumer-facing UI and scriptable API, it can be fully integrated into a professional production pipeline regardless of industry.
 
 At high level, the Skinner tool works by exporting & importing ```SkinChunk``` data, discussed below.
+
+## Donate For Usage
+
+As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any tips you'd like to provide.  
+
+Please 'buy me a coffee' per the below suggested tipping rate:  https://www.buymeacoffee.com/akeric
+
+* Student / Hobbiest / Indy dev : Free!  (but if you want to donate, I won't turn you down)
+* Any other production : $25 a user.
 
 ## Disclaimers
 
@@ -110,10 +119,6 @@ Having built holistic art -> engine pipelines for multiple studios (Visceral/EA,
 The tools that Maya provides lack features (+ can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
 
 This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
-
-## Why is it free?
-
-We all [stand on the shoulders of the giants](https://en.wikipedia.org/wiki/Standing_on_the_shoulders_of_giants) that came before us.  And while I do feel I added some of my own ingenuity to this process (and put *considerable* personal time and effort into it), much of this tech is built on the learnings of so many that came before me.  So it's a gift back to the community that has given me so much.
  
 ## Similar Tools
 If you are the author of any of the below tools and feel I have misrepresented your software in any way, please let me know for correction.
