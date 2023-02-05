@@ -37,24 +37,17 @@ At high level, the Skinner tool works by exporting & importing ```SkinChunk``` d
 
 ## Donate For Usage
 
-As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any tips you'd like to provide.  
+As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any tips you'd like to provide!  
 
-Please 'buy me a coffee' per the below suggested tipping rate:  https://www.buymeacoffee.com/akeric
+Please 'buy me a coffee' per the below suggested tipping rate:  
 
+* https://www.buymeacoffee.com/akeric  : accepts Google Pay, Apple Pay, and Credit Card
 * Student / Hobbyist / Indy dev : Free!  (but if you want to donate, I won't turn you down)
 * Any other production : $25 a user.
 
-It accepts Google Pay, Apple Pay, and Credit Card.
-
 ## Disclaimers
 
-Skinner is closed source code:  You are welcome to use it for your benefit for free without restriction, but the secret sauce is kept behind the counter.  
-
-By using/installing it you're accepting all repsonsibilities for its usage, and release me from all liability: See the [License](https://github.com/AKEric/skinner/blob/main/LICENSE.md).
-
-Skinner is obfuscated via [PyArmor](https://pyarmor.dashingsoft.com/)
-
-If you have interest in purchasing the source for your production, please contact me for pricing info. ```warpcat at gmail dot com```
+By using/installing Skinner you're accepting all repsonsibilities for its usage, and release me from all liability: See the [License](https://github.com/AKEric/skinner/blob/main/LICENSE.md).
 
 I have a full time job, this is a side project:  I will attempt to address all issues outside of work hours to the best of my abilities.
 
