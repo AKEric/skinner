@@ -37,11 +37,13 @@ At high level, the Skinner tool works by exporting & importing ```SkinChunk``` d
 
 ## Donate For Usage
 
-As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any tips you'd like to provide!  
+As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any donations you'd like to provide!  
 
-Please 'buy me a coffee' per the below suggested tipping rate:  
+Two options:
+* https://paypal.me/akpavey
+* https://www.buymeacoffee.com/akeric
 
-* https://www.buymeacoffee.com/akeric  : accepts Google Pay, Apple Pay, and Credit Card
+Suggested donation rate:
 * Student / Hobbyist / Indy dev : Free!  (but if you want to donate, I won't turn you down)
 * Any other production : $25 a user.
 
