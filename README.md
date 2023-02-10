@@ -1,7 +1,7 @@
 **Table Of Contents**
 - [Overview](#overview)
-  * [Disclaimers](#disclaimers)
   * [Donate For Usage](#donate-for-usage)
+  * [Disclaimers](#disclaimers)
   * [Export Features](#export-features)
   * [Import Features](#import-features)
   * [Other Features](#other-features)
@@ -60,6 +60,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Can ‘set to bindpose’ before export, or not. Generally not needed, but optional.
 
 ## Import Features
+* Not UV dependent (other skin tools on the market operate on UVs).
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API (discussed below), you can even add your own custom 'closest point' function these call on.
