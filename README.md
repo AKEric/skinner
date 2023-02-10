@@ -60,7 +60,6 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Can ‘set to bindpose’ before export, or not. Generally not needed, but optional.
 
 ## Import Features
-* Not UV dependent (other skin tools on the market operate on UVs).
 * Can import from multiple ```.sknr``` files at the same time & merge the data:  If there is same-named ```SkinChunk``` data in multiple ```.sknr``` files, the ones saved 'most recently' win the merge.
 * Can import onto any combination of mesh/joints/vert/transform selection.  They’re all converted into mesh:vert chunks for import.
 * Robust logic tree when importing:  If the tool can't load in weights based on 1:1 'vert count/vert order' (100% matching topology), it will 'fall back' to an algorithm of your choice to do the work, referred to as the ‘Fallback Skinning Method’ (**FSM**): It can either be ‘Closest Neighbors’ (a custom algorithm designed for this system, discussed below) or a more basic ‘Closest Point’.  Via the API (discussed below), you can even add your own custom 'closest point' function these call on.
@@ -87,6 +86,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Supports duplicate mesh names in the Maya scene during export, but a ```.sknr``` file can't store data for mesh with duplicate names (but you could store different ```.sknr``` files for each).
 * Supports Maya’s linear, dual-quat, and weight-blended 'Skinning Methods':  What state its in during export will be the state applied during import.
 * Not so much a feature, but an FYI:  Skinner only suppots skinCluster node's who's 'Normalize Weights' value is set to 'Interactive' (1): It does not support 'None' (0), or 'Post' (2).  If Skinner encounters such a non-conforming skinCluster, it'll prompt the user to 'auto-convert' it to 'interactive' before the operation is done (v1.0.14).  If the user cancels, no work is done.  Basically: ```skinCluster.normalizeWeights = 1```.
+* Not UV dependent (other skin tools on the market operate on UVs).
 * Full featuerd backend API (fully docstringed with with Py3 type hint notation) ready to be plugged into your pipeline code.
 * Verbose and robust results printed to the Script Editor / returned by the API for your own pipeline’s consumption.
 * Full integration into your teams version control software.
