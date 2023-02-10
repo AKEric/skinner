@@ -119,6 +119,7 @@ The tools that Maya provides lack features (+ can be slow), and there isn't anyt
 This tool aims to alleviate any issues for the techart team regardless of industry.  It is in-use and proven in AAA game production.
  
 ## Similar Tools
+Last updated 2022.
 If you are the author of any of the below tools and feel I have misrepresented your software in any way, please let me know for correction.
 * Maya provided tools
   * [Deformer Weights](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-A3079688-8A42-4C82-A3CF-070D95A9CE6F-htm.html)
