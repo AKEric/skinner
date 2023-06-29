@@ -9,8 +9,9 @@
   * [Why this tool](#why-this-tool)
   * [Similar Tools](#similar-tools)
 - [Help](#help)
-- [Requirements](#requirements)
-- [Integrating Into Your Pipeline](#integrating-into-your-pipeline)
+- [Installation]
+  * [Requirements](#requirements)
+  * [Integrating Into Your Pipeline](#integrating-into-your-pipeline)
 - [Access the Maya Tool UI](#access-the-maya-tool-ui)
   * [Tool UI Overview](#tool-ui-overview)
     + [Import Tab](#import-tab)
@@ -145,42 +146,54 @@ Please log problems & requests in the [Issues](https://github.com/AKEric/skinner
  
 I welcome all suggestions & ideas for improvement.  As mentioned above I maintain this tool in my off-hours, and will try to address any issues to the best of my ability.
 
-# Requirements
+# Installation
+
+To install the tool, fulfill the 'Requirements', and then 'Integrate into your pipeline', covered in the below sections.
+
+The "Requirements" step makes sure you have both numpy and scipy installed in a place where Maya Python can see them:  The Skinner tool leverages these external packages, so it's up to the user to install them.  The section also explains how to test they've been installed correctly in Maya before continuing.
+
+The "Integrate into your piepline" sections explains how to figure out where you should extract _this_ code, from the zip.  Since this tool could be used by anyone from a hobbiest to a AAA studio, it's up to the user to understand where to extract the tools, but that section fully explains how to do this, if you're unfamilar with the process.
+
+**If you're unfamilar with this level of tool integration**, that's ok:  If you follow the below sections line by line, step by step, there's no reason you wno't find success.
+
+## Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
 * Python 3 (Maya 2022+)
   * This will not work on older versions of Maya running Python 2.7
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
   * [Scipy](https://scipy.org/)
+  * By default they will be missing, so presume they need installed.
 
-Maya 2022+ makes it very easy to install new Python packages via pip.  Maya 2022 docs [HERE](https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-72A245EC-CDB4-46AB-BEE0-4BBBF9791627).
+Maya 2022+ makes it very easy to install new Python packages via pip.  Official Maya 2022 docs [HERE](https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-72A245EC-CDB4-46AB-BEE0-4BBBF9791627) that you should read & have an understanding of.
 
 Here is an example usage for Maya 2022 on Windows 10:
 
-Open cmd shell **as admin** (on Windows at least).
-
-Then line by line:
-
-Install the ```scipy``` & ```numpy``` packages, one at a time, via ```pip```.  Note, it’s important to call to ```mayapy.exe``` specifically to execute it’s version of ```pip```.
-Also, technically you only need to install ```scipy```, since it should auto-pull in the numpy dependencies it requires.
+* Find on your hard drive Where ```mayapy.exe``` lives for the version of Maya you're installing this for (could have multiple Maya versions on your PC).  The below example shows a standard install location:  Make a note of this path.
+* Open a Command Prompt **as admin** (on Windows at least)
+  * Start Menu -> Command Prompt -> RMB (Right Mouse Button) -> Run As Administrator
+* Then line by line:
+  * Install the ```scipy``` & ```numpy``` packages, one at a time, via ```pip``` using the below example.
+  * Note, it’s important to call to ```mayapy.exe``` _specifically_ to execute _its _version of ```pip```.
+  * Also, technically you only need to install ```scipy```, since it should auto-pull in the ```numpy``` dependencies it requires.
+  * Use the path to _your_ version of ```mayapy.exe``` below:
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
 ```
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
 ```
-You can optionally provide a ```–target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
-
-In either case, if the above worked, you should see (using numpy as an example):
+* If yo'ure installing this for a studio (vs home use), you can optionally provide a ```–target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
+* In either case, if the above worked, you should see (using numpy as an example):
 ```
 > Downloading numpy-1.19.5-cp37-cp37m-win_amd64.whl (13.2 MB)
 > Successfully installed numpy-1.19.5
 ```
-They should install here by default, unless overridden by the ```–target``` arg:
+* They should install here by default, unless overridden by the ```–target``` arg:
 ```
 C:\Program Files\Autodesk\Maya2022\Python37\Lib\site-packages
 ```
-After restarting Maya, in the Script Editor, confirm the install:
+* After restarting Maya, in the Script Editor, confirm the install:
 ```python
 import numpy as np
 import scipy as sp
@@ -189,30 +202,35 @@ print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\numpy\__init__.py
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
 ```
-# Integrating Into Your Pipeline
-All code lives in a ```/skinner``` Python package.  If you don't use git to manage code, you can easily download/extract via the provided zip. There are two ways:
-* Access the [Releases](https://github.com/AKEric/skinner/releases) page, and download a zip of the most current release.
-* Download a zip of this repro's head revision via the green Code button -> Download zip.
-
-In either case:
-  * I have had reports of the OS declaring this a 'trojan file' : My guess this is some sort of OS boilerplate based on the fact this is Python code that you're grabbing from the web.  You can take my word that this is not virus/trojan software, or just not use it.
-  * Open the zip, and extract the ```/skinner``` subdir to a location on your Maya-Python ```sys.path```.
-  * It is now available for import & usage in Maya.
-
-To get a list of those paths, execute in the Script Editor:
+## Integrating Into Your Pipeline
+All code lives in a ```/skinner``` Python package.  
+* If you don't use git to manage code, you can easily download/extract via the provided zip. There are two ways:
+  * Access the [Releases](https://github.com/AKEric/skinner/releases) page, and download a zip of the most current release.
+  * Download a zip of this repro's head revision via the green Code button -> Download zip.
+* Figure out where you should extract it based on how your Maya is configured:
+  * To get a list of paths valid for copy, execute in a Python tab in the Script Editor:
 ```python
 import sys
 for path in sorted(sys.path):
     print(path)
 ```
-To test that you have a successful install via the Maya Script Editor, run the test suite, and see the results:
+* Common dirs (all valid for extract) that should show up may look like:
+```
+C:/Users/your.name/Documents/maya/2022/prefs/scripts
+C:/Users/your.name/Documents/maya/2022/scripts
+C:/Users/your.name/Documents/maya/scripts
+...
+```
+* Choose one that looks appropriate for you and :
+  * Open the zip, and extract the ```/skinner``` subdir to that dir.
+  * It is now available for import & usage in Maya!  **Restart Maya if it was open.**
+* To test that you have a successful install via the Maya Script Editor, run the test suite, and see the results:
 ```python
 import skinner.core as skinCore
 skinCore.test()
 ```
-You can also access/run the test suite via the UI -> Extras tab (see how to open the UI below).
-
-It should be noted that after install, importing ```skinner.core``` will run ```skinner.utils.confirmDependencies```, and will print any errors found to the Script Editor.
+* You can also access/run the test suite via the UI -> Extras tab (see how to open the UI below).
+* It should be noted that after install, importing ```skinner.core``` will run ```skinner.utils.confirmDependencies```, and will print any errors found to the Script Editor.
 
 # Access the Maya Tool UI
 You can launch the Maya Tool UI via this Python code:
