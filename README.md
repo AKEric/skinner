@@ -9,7 +9,7 @@
   * [Why this tool](#why-this-tool)
   * [Similar Tools](#similar-tools)
 - [Help](#help)
-- [Installation]
+- [Installation](#installation)
   * [Requirements](#requirements)
   * [Integrating Into Your Pipeline](#integrating-into-your-pipeline)
 - [Access the Maya Tool UI](#access-the-maya-tool-ui)
