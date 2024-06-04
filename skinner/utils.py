@@ -1,6 +1,6 @@
 r"""
 Name : skinner.utils.py
-Author : Eric Pavey - warpcat@gmail.com - https://github.com/AKEric/skinner
+Author : Eric Pavey - warpcat@gmail.com - www.akeric.com
 Creation Date : 2021-10-23
 Description :
     Various utils/tools used in different Skinner modules.
@@ -17,6 +17,9 @@ Updates:
     2022-03-03 : v1.1.6 : Updating ProgressWindow to print stack trace if exceptions
         are encountered.  Bugfixing getAtBindPose to skip past skinClusters missing
         connected dagPose nodes.
+    2022-07-18 : v1.1.10 : Updating validateInteractiveNormalization to get around
+        edgcase error when running mc.skinPercent(skinCluster, normalize=True) on
+        certain skinClusters.
 """
 import re
 import os
@@ -264,15 +267,22 @@ def validateInteractiveNormalization(skinClusters:list, promptOnNonInteractiveNo
             print("    ", ni)
         if promptOnNonInteractiveNormalization:
             result = mc.confirmDialog(title="Warning",
-                                      message=f"Found {len(nonInteractive)} skinCluster node(s) that don't have their 'normalizeWeights' set to 'interactive'.\n\nSkinner only supports normalized weights:\n\nDo you want skinner to auto convert your skinClusters to 'interactive' normalization?  If not, the tool will exit.",
+                                      message=f"Found {len(nonInteractive)} skinCluster node(s) that don't have their 'normalizeWeights' set to 'interactive'.\n\nSkinner only supports normalized weights:\n\nDo you want skinner to auto convert your skinClusters to 'interactive' normalization?  If not, the tool will exit.\n\nIf you don't understand what this means, it's generally safe to 'Convert'.",
                                       button=("Convert", "Exit"))
             if result == "Exit":
                 raise Exception("User exited tool based on incompatible skinCluster.normalizeWeight values.")
-            mc.undoInfo(openChunk=True)
+            mc.undoInfo(openChunk=True, chunkName="validateInteractiveNormalization")
             try:
                 for skinCluster in nonInteractive:
                     mc.setAttr(f"{skinCluster}.normalizeWeights", 1) # 0 = none, 1 = interactive, 2 = post
-                    mc.skinPercent(skinCluster, normalize=True) # normalize!
+                    try:
+                        # There ahve been times  Maya has errored here, simply saying
+                        # "No objects found.", and nothing else.  But skipping this
+                        # if it fails seems to be ok,
+                        mc.skinPercent(skinCluster, normalize=True) # normalize!
+                    except:
+                        pass
+                    print("    NORM2 END")
                 print("Skinner: updated the above skinCluster nodes to use 'interactive' weight normalization.")
             finally:
                 mc.undoInfo(closeChunk=True)

@@ -47,9 +47,16 @@ Changelog:
         'weight difference threhold' value.  Changing the default post smooth diff
         value from .01 to .25, to help resolve odd skinning bugs.
     2022-03-31 : v1.1.8 : Bugfixing string formatting error in core -> setWeights.
+    2022-05-18 : v1.1.9 : Updating core.closestPointKdTree to allow numNeighbors=1.
+        Before that it would be auto-set to 2, based on my not understanding how
+        the ndarray return values worked.  Also updating it to support older versions
+        of KDTree that don't have the 'workers' arg.
+    2022-07-18 :  v1.1.10 : Updating validateInteractiveNormalization to get around
+        edgcase error when running mc.skinPercent(skinCluster, normalize=True) on
+        certain skinClusters.
 """
 __author__ = "Eric Pavey"
-__version__ = "1.1.8"
+__version__ = "1.1.10"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"

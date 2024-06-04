@@ -1,6 +1,6 @@
 r"""
 Name : skinner.window.py
-Author : Eric Pavey - warpcat@gmail.com - https://github.com/AKEric/skinner
+Author : Eric Pavey - warpcat@gmail.com - www.akeric.com
 Creation Date : 2019-09-28
 Description : Window / UI code for the skinner tool.  For the back-end API code,
     see skinner.core.py
@@ -1145,7 +1145,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         closestNeighborCount = int(self.widget_nearestNeighborNum.text())
         closestNeighborDistMult = float(self.widget_nearestNeighborDistMult.text())
 
-        mc.undoInfo(openChunk=True)
+        mc.undoInfo(openChunk=True, chunkName="importSkin")
 
         result = core.importSkin(items=None, filePaths=paths, verbose=verbose,
                                  printOverview=printOverview, printOverviewMode=printOverviewMode,

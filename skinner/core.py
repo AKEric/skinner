@@ -1,6 +1,6 @@
 r"""
 Name : skinner.core.py
-Author : Eric Pavey - warpcat@gmail.com - https://github.com/AKEric/skinner
+Author : Eric Pavey - warpcat@gmail.com - www.akeric.com
 Creation Date : 2019-09-28
 Description :
     Import/export skin weights.  It just works, fast.
@@ -87,6 +87,10 @@ Updates:
        Changing the default post smooth diff value from .01 to .25, to help resolve
        odd skinning bugs.
     2022-03-31 : v1.1.8 : Bugfixing string formatting error in setWeights.
+    2022-05-18 : v1.1.9 : Updating closestPointKdTree to allow numNeighbors=1.
+        Before that it would be auto-set to 2, based on my not understanding how
+        the ndarray return values worked.  Also updating it to support older versions
+        of KDTree that don't have the 'workers' arg.
 
 Examples:
 
@@ -222,11 +226,7 @@ def closestPointKdTree(points:np.ndarray, targets:np.ndarray, numNeighbors:int) 
     targets : ndarray[n][3] : All the 3D points being tested against: Their
         order represents the vert index order.  They're what the kdTree is being
         made on;  What originally had weights saved on them.
-    numNeighbors : int : The number of closest neighbors to find/return.  Note
-        that how the KDTree returns its values, if you pass numNeighbors=1 to it,
-        it won't generate the correct type of nested numpy arrays.  Thus, internally,
-        if ther user passes in numNeighbors=1, the code swiches it to numNeighbors=2.
-        Just be aware the return will affected as such.
+    numNeighbors : int : The number of closest neighbors to find/return.
 
     Return : tuple : both are ndarrays of the same length in the vert order of the
         passed in points array.  It is the direct return from KDTree.query()
@@ -244,16 +244,26 @@ def closestPointKdTree(points:np.ndarray, targets:np.ndarray, numNeighbors:int) 
         raise ImportError("Unable to import the scipy.spatial module to access the KDTree class")
     if len(targets) < numNeighbors:
         numNeighbors = len(targets)
-    if numNeighbors == 1:
-        # Why? See docstring above.
-        numNeighbors = 2
+
     workers = 1 # The KDTree.query default : Use 1 processor.
     if gMultiThread:
         workers = -1 # use all'dem
     # Build and query a kdTree for our target points, then return the results
     # checking them against our sample points:
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.KDTree.query.html#scipy.spatial.KDTree.query
-    return KDTree(targets).query(points, numNeighbors, workers=workers)
+    try:
+        distances, indexes = KDTree(targets).query(points, numNeighbors, workers=workers)
+    except:
+        # Older versions of KDTree don't support the workers arg.
+        distances, indexes = KDTree(targets).query(points, numNeighbors)
+
+    if numNeighbors == 1:
+        # If we only query one closest distance, numpy will return an array of scalars,
+        # not an array of arrays.  For consistency, we want it to always return
+        # an array of arrays.
+        distances = [[item] for item in distances]
+        indexes = [[item] for item in indexes]
+    return (distances, indexes)
 
 def closestPointBruteForce(points:np.ndarray, targets:np.ndarray, numNeighbors:int) -> tuple:
     r"""
@@ -1971,7 +1981,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
     # Validation complete
 
     timeStart = time.time()
-    mc.undoInfo(openChunk=True)
+    mc.undoInfo(openChunk=True, chunkName="setWeights")
     try:
         #-------------------------------------------------------------
         # Based on what was proivded to import on, break it down to individual verts:
@@ -2532,7 +2542,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                     # To get that, we need to 'unpack' our current weights 'list of sublists':
                     arrayWeights = om2.MDoubleArray([item for item in itertools.chain(*weights)])
 
-                    mc.undoInfo(openChunk=True)
+                    mc.undoInfo(openChunk=True, chunkName="setWeights undoHack")
                     try:
                         # Hack the undo queue: Put in dummy values.
                         inf = infDags[0].fullPathName()
