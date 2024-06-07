@@ -437,16 +437,15 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * Whether or not it's in the bindpose when the SkinChunk is created (v1.1.1).
 * The influence weights for each target vert exported.
 * The ‘blend weights’ for each target vert exported, if the ‘skinning method’ is ‘weight-blended’.
-* The influence weights for each target vert exported.
 * A sample of vert neighbors based on input args.
-* The ‘skinning method’ : Linear, dual-quat, weight-blended.
-* The date it was saved, and the name of the user.
+* The ‘skinning method’ of the skinCluster : Linear, dual-quat, weight-blended.
+* The date it was saved, and the name of the user who saved it.
 
-A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh, where each point represents an original vertex position (and other data) in worldspace associated with that mesh shape name.
+A single ```SkinChunk``` can be imagined as a point cloud of data for a specific mesh, where each point represents an original vertex position (and other data) in worldspace, associated with that mesh shape name.
 
 ## UberChunks
 
-When importing on mesh (shape nodes), the tool tries to find a ```SkinChunk``` that has a name match with a mesh shape.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import off of, which helps address issues when you’re importing onto mesh that have no name match (or, based on the import options, no vert count/order match) in the skinChunks provided.
+When importing on mesh (shape nodes), the tool tries to find a ```SkinChunk``` that has a name match with a mesh shape.  What happens if it can’t?  An ```UberChunk``` is formed.  The ```UberChunk``` is a combination of every ```SkinChunk``` provided, generating a single giant point cloud of data to import from, which helps address issues when you’re importing onto mesh that have no name match (or, based on the import options, no vert count/order match) in the provided SkinChunks.
 
 # Using the Skinner API
 
