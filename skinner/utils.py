@@ -20,7 +20,12 @@ Updates:
     2022-07-18 : v1.1.10 : Updating validateInteractiveNormalization to get around
         edgcase error when running mc.skinPercent(skinCluster, normalize=True) on
         certain skinClusters.
+    2024-06-04 : v1.1.11 : Bugfixing tool to properly paste weights on selected
+        verts.  Specifically, updating addInfluences to not change any weights
+        when influences are added.  Adding transposeWeights, to reorder SkinChunk
+        influence weights based on skinCluster influence order.
 """
+from __future__ import annotations # for type hinting
 import re
 import os
 import sys
@@ -386,6 +391,16 @@ def getMObjectForVertIndices(verts:list) -> om2.MObject:
     themselves.  It's a weird abstraction layer, but needed to set weights via
     the API.
 
+    Here's an example of how to interact with the returned MObject at a higher
+    level, after the fact:
+
+    importVertexCompObj = getMObjectForVertIndices(listOfVertNames) # type: om2.MObject
+    if importVertexCompObj.hasFn(om2.MFn.kMeshVertComponent):
+        # The above test should always be True, but it's how you'd check for it
+        # on an arbitrary MObject.
+        singleIdComp = om2.MFnSingleIndexedComponent(importVertexCompObj)
+        elements = singleIdComp.getElements()
+
     Parameters:
     verts : list : The "meshName.vtx[#]' for each vertex.
 
@@ -394,8 +409,10 @@ def getMObjectForVertIndices(verts:list) -> om2.MObject:
     if not isinstance(verts, (list,tuple)):
         verts = [verts]
     indices = [int(re.findall(r'\d+', vert)[-1]) for vert in verts]
-    singleIdComp = om2.MFnSingleIndexedComponent()
-    vertexComp = singleIdComp.create(om2.MFn.kMeshVertComponent) # MObject
+    # https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=Maya_SDK_py_ref_class_open_maya_1_1_m_fn_single_indexed_component_html
+    singleIdComp = om2.MFnSingleIndexedComponent() # type: om2.MFnSingleIndexedComponent
+    # https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=Maya_SDK_py_ref_class_open_maya_1_1_m_object_html
+    vertexComp = singleIdComp.create(om2.MFn.kMeshVertComponent) # type: om2.MObject
     singleIdComp.addElements(indices)
     return vertexComp
 
@@ -492,7 +509,7 @@ def addInfluences(skinCluster:(str,om2.MDagPath,oma2.MFnSkinCluster),
     unlockInfluences(skinCluster)
     if setToBindPose:
         setBindPose(skinCluster)
-    mc.skinCluster(skinCluster, edit=True, addInfluence=infs)
+    mc.skinCluster(skinCluster, edit=True, addInfluence=infs, weight=0.0)
 
 def setBindPose(skinCluster:str) -> (bool,None):
     r"""
@@ -553,6 +570,40 @@ def getAtBindPose(skinClusters:list) -> bool:
                 atPose = False
                 break
     return atPose
+
+def transposeWeights(skinChunkWeights:list[float], skinChunkInfNames:list[str], skinClusterInfNames:list[str] ):
+    """
+    For the passed in list of weight values from a skinChunk, transpose (reorder
+    them) so that they match the same order as the influences for a given skinCluster.
+
+    Parameters:
+    skinChunkWeights : list : Each item is a sublist of floats, that is the same
+        lenth as both skinChunkInfNames and skinClusterInfNames.
+    skinChunkInfNames : list : The leaf influence names in the SkinChunk.
+    skinClusterInfNames : list : The leaf influence names in the skinCluster.
+
+    Return : list : Each item is the same sublist passed in to skinChunkWeights,
+        but reordered to match the skinCluster influence order.
+    """
+    # Mostly wrote to help with debugging while authroring it.  Technically none
+    # of these should be hit based on calls from the main code.
+    assert len(skinChunkWeights[0]) == len(skinChunkInfNames), f"The list of weighs in skinChunkWeights ({len(skinChunkWeights[0])}) is a different length than the number of names in skinChunkInfNames ({len(skinChunkInfNames)})"
+    missingSkinChunk = [name for name in skinChunkInfNames if name not in skinClusterInfNames]
+    assert not missingSkinChunk, f"Found {len(missingSkinChunk)} influences in skinChunkInfNames that aren't in skinClusterInfNames: {missingSkinChunk}"
+    missingSkinCluster = [name for name in skinChunkInfNames if name not in skinChunkInfNames]
+    assert not missingSkinCluster, f"Found {len(missingSkinCluster)} influences in missingSkinCluster that aren't in skinChunkInfNames: {missingSkinCluster}"
+
+    ret = []
+    for chunkWeights in skinChunkWeights:
+        transposed = []
+        for skinClusterInf in skinClusterInfNames:
+            if skinClusterInf in skinChunkInfNames:
+                chunkIndex = skinChunkInfNames.index(skinClusterInf)
+                transposed.append(chunkWeights[chunkIndex])
+            else:
+                transposed.append(0)
+        ret.append(transposed)
+    return ret
 
 #-------------------
 # Skin weight related getters
@@ -719,8 +770,9 @@ def getMeshVertIds(items=None) -> dict:
     items : string / list / None : If None, work on the active selection.  Otherwise
         names of transforms, mesh shapes, or vert names like 'mesh.vtx[#]'
 
-    Return : dict : keys are mesh shape names, full paths.  Values are the vert
-        ID#'s (as ints) that should be exported.
+    Return : dict :keys are mesh shape names, full paths.
+        Values are the vert ID#'s (as ints) that should be processed.
+
     """
     if not items:
         items = []
@@ -753,7 +805,8 @@ def getMeshVertIds(items=None) -> dict:
             items = [items]
         items = mc.ls(items, flatten=True, long=True)
     assert items, "No mesh/verts are provided."
-    ret = {}
+    itemsRet = {}
+    nonItemsRet = {}
 
     for item in items:
 
@@ -771,29 +824,30 @@ def getMeshVertIds(items=None) -> dict:
                 if shapes: # this should alway be a thing
                     meshShape = shapes[0]
 
-            if meshShape in ret:
-                if vertId not in ret[meshShape]:
-                    ret[meshShape].append(vertId)
+            if meshShape in itemsRet:
+                if vertId not in itemsRet[meshShape]:
+                    itemsRet[meshShape].append(vertId)
             else:
-                ret[meshShape] = [vertId]
+                itemsRet[meshShape] = [vertId]
 
         else:
             if mc.objectType(item) == "mesh":
                 # Is mesh, add all the verts for it:
-                ret[item] = list(range(mc.polyEvaluate(item, vertex=True)))
+                itemsRet[item] = list(range(mc.polyEvaluate(item, vertex=True)))
+
             else:
                 # Must be transform, find all child mesh, and add all their verts.
                 childMesh = mc.listRelatives(item, allDescendents=True, fullPath=True,
                                              type="mesh", shapes=True, noIntermediate=True)
                 if childMesh:
                     for cm in childMesh:
-                        ret[cm] = list(range(mc.polyEvaluate(cm, vertex=True)))
+                        itemsRet[cm] = list(range(mc.polyEvaluate(cm, vertex=True)))
 
     # make sure all our vertIds are sorted:
-    for meshShape in ret:
-        ret[meshShape].sort()
+    for meshShape in itemsRet:
+        itemsRet[meshShape].sort()
 
-    return ret
+    return itemsRet
 
 def getConnectedVertIDs(verts:list) -> list:
     r"""

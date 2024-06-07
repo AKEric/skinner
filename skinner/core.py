@@ -91,6 +91,12 @@ Updates:
         Before that it would be auto-set to 2, based on my not understanding how
         the ndarray return values worked.  Also updating it to support older versions
         of KDTree that don't have the 'workers' arg.
+    2024-06-04 : v1.1.11 : Bugfixing tool to properly paste weights on selected
+        verts.  Specifically updating setWeights to leverage the new utils.transposeWeights
+        to sort SkinChunk weights in the same order as the influences on the skinCluster.
+        Also raising more expections if 'selectVertsOnly' is set and operations
+        would happen that would change the skinning.  Various verbose logging formatting
+        changes.
 
 Examples:
 
@@ -131,6 +137,7 @@ import time
 import pickle
 import itertools
 import tempfile
+import traceback
 from datetime import datetime
 from collections import OrderedDict
 
@@ -152,6 +159,7 @@ from . import __version__
 
 #---------------------------
 
+# Same list indexed values values as the skinCluster.skinningMethod enum
 SKIN_METHODS = ("classic linear", "dual quaternion", "weight blended")
 
 EXT = "sknr"
@@ -658,6 +666,7 @@ def closestPointWeights(allSavedWeights:np.ndarray, allSavedBlendWeights:np.ndar
     for i in range(len(importVertPositions)):
         closestIndex = indexArr[i][0]
 
+
         if filterByVertNormal:
             closestNormalMatch = None
             for j in range(0, len(distancesArr[i])):
@@ -674,6 +683,8 @@ def closestPointWeights(allSavedWeights:np.ndarray, allSavedBlendWeights:np.ndar
             # just default to the closest point defined above.
 
         newWeights.append(allSavedWeights[int(closestIndex)])
+        #print(i, closestIndex, allSavedWeights[int(closestIndex)])
+
         if useBlendWeights:
             newBlendWeights.append(allSavedBlendWeights[int(closestIndex)])
 
@@ -1362,6 +1373,8 @@ class SkinChunk(Chunk):
         r"""
         Return the int skinning method used by this SkinChunk, as spec'd by the
         SKIN_METHODS global.
+        Same list indexed values values as the skinCluster.skinningMethod enum:
+        "classic linear", "dual quaternion", "weight blended"
         """
         return self.skinningMethod
 
@@ -1926,7 +1939,10 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
         of .6 : abs(.5 - .6) = 0.1:  It will only be smoohted if postSmoothWeightDiff
         is less than .1
     selectVertsOnly : bool : Default False : If True, don't perform any skinning,
-        but instead select the verts that would get skinning applied.
+        but instead select the verts that would get skinning applied.  Note, having
+        this checked will cause the weight set to fail under a number ofconditions,
+        any of which would require a change to the skinCluster (say, adding new
+        influences, missing joints) before the weights were set.
     verbose : bool : Default True : Print the results?
     promptOnNonInteractiveNormalization : bool : Default True : If True, and if
         skinCluter node are found with their normalizeWeights value set to anything
@@ -1985,8 +2001,8 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
     try:
         #-------------------------------------------------------------
         # Based on what was proivded to import on, break it down to individual verts:
-        # This dictionary's keys are mesh shape names, and the values are lists of
-        # the previously saved int vert IDs to import onto.
+        # meshShapeVertIds dictionary's keys are mesh shape names, and the values
+        # are lists of the previously saved int vert IDs to import onto.
         meshShapeVertIds = utils.getMeshVertIds(items=items)
 
         # Make sure if there is existig skinning, the skinCluster nodes have their
@@ -2029,11 +2045,13 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 if verbose:
                     print("#----------------------------------------------------------")
 
+                meshVertCount = mc.polyEvaluate(meshShape, vertex=True)
                 #-------------------
                 # This is what we're importing onto:
                 importVertIds = meshShapeVertIds[meshShape]
                 importVertNames = ["%s.vtx[%s]"%(meshShape, vid) for vid in importVertIds]
                 numImportOntoVerts = len(importVertIds) # The number of verts we're importing onto
+
                 if verbose:
                     print("Importing on %s verts of mesh: %s"%(numImportOntoVerts, meshShape))
 
@@ -2042,9 +2060,10 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 #-------------------------------------------------------------------
                 # SKINCHUNK AND UBERCHUNK SETUP
 
-                skinChunk = None
+                skinChunk = None # type: SkinChunk
                 importFromUberChunk = False
                 foundSkinChunkNameMatch = False
+
                 if forceUberChunk:
                     importFromUberChunk = True
                 else:
@@ -2082,16 +2101,16 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 # Get the saved influence names, and make sure none are missing, or
                 # there are duplicates.
 
-                savedInfNames = [] # String names, leaf
+                skinChunkInfNames = [] # String names, leaf
                 infNameData = OrderedDict() # Keys are leaf names, values are full path names.
                 theChunk = None
                 if skinChunk:
                     # list of strings leaf names
-                    savedInfNames = skinChunk.getInfluences()
+                    skinChunkInfNames = skinChunk.getInfluences()
                     theChunk = skinChunk
                 elif uberChunk:
                     # list of strings leaf names
-                    savedInfNames = uberChunk.getInfluences()
+                    skinChunkInfNames = uberChunk.getInfluences()
                     theChunk = uberChunk
                 missingInfs = []
                 multipleInfs = []
@@ -2099,7 +2118,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 existingSkinClusters = []
 
                 # Look for these joints in the scene: Hope you find just one!
-                for sin in savedInfNames:
+                for sin in skinChunkInfNames:
                     occurances = mc.ls(sin, long=True, type='joint')
                     if not occurances:
                         missingInfs.append(sin)
@@ -2114,7 +2133,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                             for osc in outSkinClusters:
                                 if osc not in existingSkinClusters:
                                     existingSkinClusters.append(osc)
-                if mFnSkinCluster:
+                if mFnSkinCluster and mFnSkinCluster.name() not in existingSkinClusters:
                     existingSkinClusters.append(mFnSkinCluster.name())
 
                 assert not multipleInfs, "For mesh '%s', found multiple joint influences in the scene with the same names.  How does Skinner know which one should be used? : %s"%(meshShape, multipleInfs)
@@ -2138,7 +2157,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         print("\tSetting related (via SkinCluster influences, or existing skinning) skinCluster nodes to their bindpose:")
 
                     noPoseSc = []
-                    for skinCluster in existingSkinClusters:
+                    for skinCluster in sorted(existingSkinClusters):
                         # If already skinned, set to the bindpose before we detach
                         # skinning, or add any influences, or just if the user had
                         # that option set.
@@ -2163,6 +2182,8 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 # UNSKIN
 
                 if unskinFirst:
+                    if selectVertsOnly:
+                        raise Exception("selectVertsOnly=True, but unskinFirst=True also:  Unskinning will cause a chnage in skinning, probably undesirably.")
                     # Since we're removing any existing skinning, there won't be
                     # 'pre-deformed' data to query, since the mesh will revert back
                     # to the bindpose.
@@ -2185,6 +2206,8 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 # CREATE MISSING INFLUENCES
 
                 if missingInfs and createMissingInfluences:
+                    if selectVertsOnly:
+                        raise Exception("selectVertsOnly=True, but missing influences were found, and createMissingInfluences=True: This will cause a scene change, possibly undesirably.")
                     # would have errored above if we got in here and createMissingInfluences=False
                     newInfResults = theChunk.buildMissingInfluences()
                     newInfluences = newInfResults["newInfluences"] # Leaf names
@@ -2214,8 +2237,10 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 #-------------------------------------------------------------------
                 #-------------------------------------------------------------------
                 # UPDATE SKINCLUSTER WITH INFLUENCES
-
+                skinClusterInfluenceNames = []
                 if not mFnSkinCluster:
+                    if selectVertsOnly:
+                        raise Exception("selectVertsOnly=True, but the current mesh is unskinned, incompatible settings.")
                     # If the mesh isn't currently skinned, skin it to the same influences
                     # that are in the weight data (SkinChunk or UberChunk).
                     if verbose:
@@ -2231,11 +2256,13 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                                             name='skinnerCluster#')[0]
 
                     mFnSkinCluster = utils.getMFnSkinCluster(meshShape) # MFnSkinCluster
+                    skinClusterInfluenceNames = [dPath.fullPathName() for dPath in mFnSkinCluster.influenceObjects()]
                     endDefaultSkin = time.time()
                     defaultSkinTime = endDefaultSkin - startDefaultSkin
                     if skinChunk:
                         # If we found a skinChunk, then reapply the skinning method
                         # that was saved.
+                        # 0 = linear, 1 = dualQuat, 3 = weightBlended.
                         skinMethod = skinChunk.getSkinningMethod()
                         if skinMethod < 0:
                             # bugfix bad FBX data.  This same work is done when
@@ -2248,7 +2275,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         if verbose:
                             print("\t\tCreated: '%s', set skinning method to 'linear' since previous SkinChunk data couldn't be found, in %.2f seconds"%(scName, defaultSkinTime))
 
-                    if len(savedInfNames) == 1:
+                    if len(skinChunkInfNames) == 1:
                         # It only had one influence to begin with, and just got
                         # skinned to it:  No more work to do, done!
                         if uberChunk:
@@ -2262,23 +2289,30 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         continue
                 else:
                     # If it is already skinned, add any missing influences from the
-                    # weight data (SkinChunk or UberChunk).
-                    #currentInfluenceNames = [dPath.fullPathName().split("|")[-1] for dPath in utils.getInfluenceDagPaths(meshShape)]
-                    #currentInfluenceNames = [dPath.fullPathName().split("|")[-1] for dPath in mFnSkinCluster.influenceObjects()]
-                    currentInfluenceNames = [dPath.fullPathName() for dPath in mFnSkinCluster.influenceObjects()]
+                    # weight data (SkinChunk or UberChunk) to it, so those weights
+                    # can be properly applied later.
+                    #
+                    # But, adding these influences may not be in the same order
+                    # as what was saved in the SkinChunk, need to reorder weight
+                    # data later
+                    skinClusterInfluenceNames = [dPath.fullPathName() for dPath in mFnSkinCluster.influenceObjects()]
+
                     if verbose:
-                        print("\tPrevoiusly skinned: Checking for missing influences and adding if needed...")
-                    newInfNames = [name for name in list(infNameData.values()) if name not in currentInfluenceNames]
+                        print("\tCurrently skinned: Checking for SkinChunk influences it's missing and adding if needed (if they exist in the scene / created in an above step if missing)...")
+                    newInfNames = [name for name in list(infNameData.values()) if name not in skinClusterInfluenceNames]
 
                     if newInfNames:
+                        if selectVertsOnly:
+                            raise Exception("selectVertsOnly=True, but it was found that the existing skinCluster would need to be modified with new influences, possibly undesirably.")
                         if verbose:
-                            print("\t\tAdding New infs:")
-                            for newInf in newInfNames:
+                            print("\t\tAdding Existings Influences to SkinCluster:")
+                            for newInf in sorted(newInfNames):
                                 print("\t\t\t%s"%newInf)
                         utils.addInfluences(mFnSkinCluster, newInfNames)
+                        skinClusterInfluenceNames = [dPath.fullPathName() for dPath in mFnSkinCluster.influenceObjects()]
                     else:
                         if verbose:
-                            print("\t\tNo new infs to add!")
+                            print("\t\tNo new influences to add!")
 
                 #-------------------------------------------------------------------
                 #-------------------------------------------------------------------
@@ -2308,7 +2342,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 if importFromUberChunk:
                     # Import based on uberChunk info
                     if verbose:
-                        print("\tBegin UberChunk Import:")
+                        print("\tUberChunk Import:")
                     savedVertPositions = None
                     if importUsingPreDeformedPoints and hasattr(uberChunk, "vertPositionsPreDeformed"):
                         # Introduced in 1.1.0, so old saved data may not have this
@@ -2324,6 +2358,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                     allSavedWeights = uberChunk.getAllWeights() # ndarray
                     allSavedBlendWeights = []
                     if skinMethod == 2:
+                        # Weight Blended
                         allSavedBlendWeights = uberChunk.getAllBlendWeights() # ndarray
 
                     allSavedVertNormals =  [om2.MVector(n) for n in uberChunk.getAllNormals()]
@@ -2342,17 +2377,17 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         if verbose:
                             print("\t\tImporting by '%s Closest Neighbors Weights' on %s verts using '%s'..."%(closestNeighborCountStr, numImportOntoVerts, closestPointFunc.__name__))
                         weightData = closestNeighborsWeights(allSavedWeights, allSavedBlendWeights,
-                                                          importVertPositions, savedVertPositions,
-                                                          importVertNormals, allSavedVertNormals,
-                                                          closestNeighborCount, closestNeighborDistMult,
-                                                          closestPointFunc=closestPointFunc,
-                                                          filterByVertNormal=filterByVertNormal, vertNormalTolerance=vertNormalTolerance)
+                                                             importVertPositions, savedVertPositions,
+                                                             importVertNormals, allSavedVertNormals,
+                                                             closestNeighborCount, closestNeighborDistMult,
+                                                             closestPointFunc=closestPointFunc,
+                                                             filterByVertNormal=filterByVertNormal, vertNormalTolerance=vertNormalTolerance)
                         thisRetData["importMethod"] = "No Name Match (UberChunk) : Nearest Neighbors"
 
                 else:
                     if verbose:
-                        print("\tBegin SkinChunk Import:")
-                    meshVertCount = mc.polyEvaluate(meshShape, vertex=True)
+                        print("\tSkinChunk Import:")
+
                     skinChunkMeshVertCount = skinChunk.getMeshVertCount()
                     #allSavedWeights is ndarray[x][y] where Each item (x, represents vert ids) is a
                     #sublist (y)  : The sublist are weights in relationship to the passed
@@ -2493,14 +2528,16 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                             if verbose:
                                 print("\t\tFound mesh name match, but vert count doesn't: Importing by '%s Closest Neighbors Weights' using '%s' on %s verts..."%(closestNeighborCountStr, closestPointFunc.__name__, numImportOntoVerts))
                             weightData = closestNeighborsWeights(allSavedWeights, allSavedBlendWeights,
-                                                              importVertPositions, savedVertPositions,
-                                                              importVertNormals, allSavedVertNormals,
-                                                              closestNeighborCount, closestNeighborDistMult,
-                                                              closestPointFunc=closestPointFunc,
-                                                              filterByVertNormal=filterByVertNormal, vertNormalTolerance=vertNormalTolerance)
+                                                                 importVertPositions, savedVertPositions,
+                                                                 importVertNormals, allSavedVertNormals,
+                                                                 closestNeighborCount, closestNeighborDistMult,
+                                                                 closestPointFunc=closestPointFunc,
+                                                                 filterByVertNormal=filterByVertNormal, vertNormalTolerance=vertNormalTolerance)
                             thisRetData["importMethod"] = "Name Match (SkinChunk) : Closest Nearest Neighbor : Vert count mismatch."
 
                 if not selectVertsOnly:
+
+                    #--------------------
 
                     #------------
                     # Apply weights!
@@ -2515,19 +2552,23 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                     # MDagPathArray of our influences:
                     infDags = mFnSkinCluster.influenceObjects()
 
-                    weights = weightData["weights"]
-                    blendWeights = weightData["blendWeights"]
+                    skinClusterInfLeafNames = [name.split("|")[-1] for name in skinClusterInfluenceNames]
+                    # Make sure the weight values are listed in the same order as
+                    # the skinCluster, and not that of the SkinChunk:
+                    weights = utils.transposeWeights(weightData["weights"],
+                                                     skinChunkInfNames,
+                                                     skinClusterInfLeafNames )
+                    blendWeights = []
+                    if skinMethod == 2:
+                        blendWeights = utils.transposeWeights(weightData["blendWeights"],
+                                                              skinChunkInfNames,
+                                                              skinClusterInfLeafNames )
 
-                    utils.unlockInfluences(mFnSkinCluster.name())
-
-                    #---------------------
-                    # Hack Maya's undo queue below.  Call straight to the API,
-                    # no plugin.  This is sort of like the guts of the plugin
-                    # ripped out, and put here.
                     skinClustName = mFnSkinCluster.name()
+                    utils.unlockInfluences(skinClustName)
 
-                    # Setup our api command call args:
-
+                    # Setup our API command call args:
+                    #
                     # Pre-populate with a bunch of zeros.  Will be populated
                     # next with the index of each influence
                     infIndexes = om2.MIntArray(len(infDags), 0)
@@ -2535,24 +2576,54 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         infIndexes[x] = int(mFnSkinCluster.indexForInfluenceObject(infDags[x]))
                     # MDagPath for the mesh shape:
                     meshDagPath = utils.getMDagPath(meshShape)
-                    # An MObject for each vert being imported on
-                    importVertexCompObj = utils.getMObjectForVertIndices(importVertNames)
+                    # An MObject storing the vert IDs for each vert being imported on
+                    importVertexCompObj = utils.getMObjectForVertIndices(importVertNames) # allMeshVertNames)
+
                     # One big array for each vertex, in order, of it's weights relative
                     # to each influence.
                     # To get that, we need to 'unpack' our current weights 'list of sublists':
-                    arrayWeights = om2.MDoubleArray([item for item in itertools.chain(*weights)])
+                    weights = [list(items) for items in weights]
+                    chained = [item for item in itertools.chain(*weights)]
+                    arrayWeights = om2.MDoubleArray([float(item) for item in chained])
 
                     mc.undoInfo(openChunk=True, chunkName="setWeights undoHack")
                     try:
-                        # Hack the undo queue: Put in dummy values.
+                        #----------------------------------------
+                        # Hack the undo queue: Put in dummy values.  If you 'undo'
+                        # this command, Maya thinks you're undoing the next line,
+                        # which will restore the previous weights.
                         inf = infDags[0].fullPathName()
-                        mc.skinPercent(skinClustName, importVertNames, transformValue=[(inf, 1.0)])
+                        mc.skinPercent(skinClustName, importVertNames, transformValue=[(inf, 1.0)]) # allMeshVertNames
 
+                        #----------------------------------------
                         # Set the weights fast via the API
-                         # https://help.autodesk.com/view/MAYAUL/2020/ENU/?guid=__py_ref_class_open_maya_anim_1_1_m_fn_skin_cluster_html
-                        mFnSkinCluster.setWeights(meshDagPath, importVertexCompObj, infIndexes, arrayWeights)
+                        #
+                        # Sometimes calling MFnSkinCluster.setWeights will raise an error:
+                        #
+                        # '(kInvalidParameter): Object is incompatible with this method'
+                        #
+                        # Debugging error, found this code, just a note of something
+                        # doing someting similar to here:
+                        # https://github.com/pmolodo/pmHeatWeight/blob/master/src/PM_heatWeight.py
+                        #
+                        # I've tried to solve the error a variety of ways without
+                        # success.  For example:
+                        # 1. Having a simple repro case, saving it as .ma, 'fixing'
+                        #    it in another ma file and diffing them:  Unable to
+                        #    find noticable differnces.
+                        # 2. Wholesale copying the skinCluster creation code from
+                        #    the 'good' ma to the 'bad' ma:  Bug still present.
+                        normalize = False
+                        returnOldWeights = False
+                        # https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=Maya_SDK_py_ref_class_open_maya_anim_1_1_m_fn_skin_cluster_html
+                        # * shape       (MDagPath) - object being deformed by the skinCluster
+                        # * components   (MObject) - the components to set weights on
+                        # * influences (MIntArray) - physical indices of several influence objects.
+                        # * weights (MDoubleArray) - weights to be used with several influence objects.
+                        mFnSkinCluster.setWeights(meshDagPath, importVertexCompObj, infIndexes, arrayWeights, normalize, returnOldWeights)
 
                         if skinMethod == 2:
+                            # Weight Blended only:
                             # Hack the undo queue: Put in dummy values.
                             # Why doesn't the skinPercent command support this?
                             # calling to setAttr this many times sucks.
@@ -2563,10 +2634,11 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                             mFnSkinCluster.setBlendWeights(meshDagPath, importVertexCompObj, arrayBlendWeights)
                         thisRetData["success"] = True
                     except RuntimeError as e:
-                        print(e)
+                        print(f"\t\t\tMaya Runtime Error: '{e}'")
                         if not unskinFirst:
-                            print("The 'unskinFirst' arg is set to False : Changing this to True and trying again can fix this error: There's 'something' in the pre-existing skinCluster data that's angering this tool.")
-                        om2.MGlobal.displayError(f"Encountered an error in setSkinnerWeights on '{meshShape}', see above.")
+                            print("\t\t\tBased on the above error:  There's an issue where some mesh with existing skinCluster data reject new weights being applied.  Two ways to fix:")
+                            print("\t\t\t\t#1: The 'unskinFirst' arg is currently set to False : Changing this to True and trying again can fix this error, since it will delete & rebuild the skinCluster in the process.  Only do this if you're reimporting skinning on a whole mesh, not a subset of verts.")
+                            print("\t\t\t\t#2: Export 'temp skinning' on the mesh, then import it with the 'unskinFirst' arg set, to reload the existing skinning and rebuild the skinnCluster.  Then, re-run this tool to get the new skinning applied.")
                         thisRetData["success"] = False
                     finally:
                         mc.undoInfo(closeChunk=True)
@@ -2579,8 +2651,9 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                     # mesh) : If it's the reverse, then smoothing can actually
                     # make it look worse.
                     numChunkPoints = theChunk.getMeshVertCount()
-                    numMeshPoints = mc.polyEvaluate(meshShape, vertex=True)
-                    if numMeshPoints < numChunkPoints:
+                    if meshVertCount < numChunkPoints and thisRetData["success"] == True:
+                        if doPostSmooth:
+                            print(f"\t\tPost-smoothing was enabled ({doPostSmooth} steps), but the vert count of the mesh being imported onto ({meshVertCount}) is less than that of points stored in the SkinChunk ({numChunkPoints}): Smoothing is generally only needed, and only provides good results, if the number of points in the SkinChunk is *less* than that of the mesh.")
                         doPostSmooth = 0
 
                     if doPostSmooth and thisRetData["success"] == True:
@@ -2673,10 +2746,18 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
         timeTotal = timeEnd - timeStart
         if verbose:
             print("#----------------------------------------------------------")
-            if selectVertsOnly:
-                om2.MGlobal.displayInfo("Vert Selection Complete (no skinning): Selected all verts in %.3f seconds"%(timeTotal))
+
+            if thisRetData["success"]:
+                if selectVertsOnly:
+                    om2.MGlobal.displayInfo("Vert Selection Complete (no skinning)%s: Selected all verts in %.3f seconds"%(timeTotal))
+                else:
+                    om2.MGlobal.displayInfo("Weight Import Complete: Set all weights in %.3f seconds"%(timeTotal))
             else:
-                om2.MGlobal.displayInfo("Weight Import Complete: Set all weights in %.3f seconds"%(timeTotal))
+                if selectVertsOnly:
+                    om2.MGlobal.displayError("Vert Selection Complete (no skinning), but encountered errors (see above ^): Selected verts in %.3f seconds"%(timeTotal))
+                else:
+                    om2.MGlobal.displayError("Weight Import Complete, but encountered errors (see above ^): Set weights in %.3f seconds"%(timeTotal))
+
 
     return ret
 
@@ -2847,7 +2928,14 @@ def importSkin(items=None, filePaths=None, verbose=True, printOverview=True, pri
     try:
         results = setWeights(items, skinChunks=skinChunks, verbose=verbose, **kwargs)
     except Exception as e:
-        print(e)
+        tb = sys.exc_info()[2]
+        tbExtract = traceback.extract_tb(tb)
+        tbList = traceback.format_list(tbExtract)
+        print ("Traceback:")
+        for line in tbList:
+            print (line.rstrip())
+
+        print("Exception:", e)
         om2.MGlobal.displayError("Skinner: Encountered an error when setting weights, see above ^")
         return False
 
@@ -2881,13 +2969,13 @@ def importSkin(items=None, filePaths=None, verbose=True, printOverview=True, pri
             if successTypeDict:
                 print("    Successfull Imports:")
                 for importMethod in sorted(successTypeDict):
-                    print("        %s"%importMethod)
+                    print("        Import Type: '%s'"%importMethod)
                     for meshData in successTypeDict[importMethod]:
                         print("            %s : %.2f Seconds"%(meshData[0], meshData[1]))
             if failTypeDict:
                 print("    Failed Imports:")
                 for importMethod in sorted(failTypeDict):
-                    print("        %s"%importMethod)
+                    print("        Import Type: '%s'"%importMethod)
                     for meshData in failTypeDict[importMethod]:
                         print("            %s : %.2f Seconds"%(meshData[0], meshData[1]))
 
@@ -2901,13 +2989,13 @@ def importSkin(items=None, filePaths=None, verbose=True, printOverview=True, pri
                 success = importData["success"]
                 if success:
                     successData.append("        %s"%meshShape)
-                    successData.append("            importMethod : %s"%importMethod)
-                    successData.append("            totalTime : %.2f Seconds"%totalTime)
+                    successData.append("            Import Method : %s"%importMethod)
+                    successData.append("            Total Time : %.2f Seconds"%totalTime)
                 else:
                     anyFailures = True
                     failData.append("        %s"%meshShape)
-                    failData.append("            importMethod : %s"%importMethod)
-                    failData.append("            totalTime : %.2f Seconds"%totalTime)
+                    failData.append("            Import Method : %s"%importMethod)
+                    failData.append("            Total Time : %.2f Seconds"%totalTime)
             if successData:
                 print("    Import Successes:")
                 for success in successData:
@@ -2922,10 +3010,7 @@ def importSkin(items=None, filePaths=None, verbose=True, printOverview=True, pri
             print("    Import completed in %.3f seconds"%totalComputeTime)
             om2.MGlobal.displayInfo("Successfully imported all Skinner data, see 'Import Overview' above ^")
         else:
-            if "unskinFirst" in kwargs:
-                if not kwargs["unskinFirst"]:
-                    print("It's possible to fix these errors in the future by setting 'unskinFirst' to True: Somtimes old/bad skinCluster data can anger this tool.")
-            om2.MGlobal.displayWarning("Expereinced Skinner import errors, see 'Import Overview' above ^")
+            om2.MGlobal.displayError("Expereinced Skinner import errors, see 'Import Overview' above ^")
 
     elif verbose:
         if not anyFailures:

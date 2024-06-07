@@ -54,9 +54,19 @@ Changelog:
     2022-07-18 :  v1.1.10 : Updating validateInteractiveNormalization to get around
         edgcase error when running mc.skinPercent(skinCluster, normalize=True) on
         certain skinClusters.
+    2024-06-04 : v1.1.11 : Bugfixing tool to properly paste weights on selected
+        verts.  Specifically:
+        utils.py : updating addInfluences to not change any weights when influences
+            are added.  Adding transposeWeights, to reorder SkinChunk influence
+            weights based on skinCluster influence order.
+        core.py :  updating setWeights to leverage the new utils.transposeWeights
+            to sort SkinChunk weights in the same order as the influences on the
+            skinCluster. Also raising more expections if 'selectVertsOnly' is set
+            and operations would happen that would change the skinning.  Various
+            verbose logging formatting changes.
 """
 __author__ = "Eric Pavey"
-__version__ = "1.1.10"
+__version__ = "1.1.11"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"
