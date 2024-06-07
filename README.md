@@ -170,7 +170,7 @@ Maya 2022+ makes it very easy to install new Python packages via pip.  Official 
 Here is an example usage for Maya 2022 on Windows 10:
 
 * Find on your hard drive Where ```mayapy.exe``` lives for the version of Maya you're installing this for (could have multiple Maya versions on your PC).  The below example shows a standard install location:  Make a note of this path.
-  * If you have trouble finding this location, you can query it in a Open Maya session, via a Python tab in the Script Editor:  ```mayapy.exe``` lives in the same dir / next to the ```maya.exe``` shown below:
+  * If you have trouble finding this location, you can query it in an open Maya session, via a Python tab in the Script Editor:  ```mayapy.exe``` lives in the same dir / next to the ```maya.exe``` shown below:
 ```python
 import sys
 print(sys.executable)
