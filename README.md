@@ -264,13 +264,13 @@ Based on the mesh:vert’s being imported on:
 * If no mesh name match is found, an ```UberChunk``` is generated that is a point cloud combination of all ```SkinChunk```s, and the FSM acts on that ```UberChunk``` data.
 
 UI Elements:
-* **Pathing**
+* **1 : Pathing**
   * Path: The path of the ```.sknr``` file(s) to import, based on:
     * Auto Fill : By default, this will be set to the directory/filename of the currently saved scene.  
       * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
       * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
     * ‘…’ : Browse to a file(s, could be multiple) to import from.
-* **Fallback Skinning Method** (FSM):  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
+* **2 : Fallback Skinning Method** (FSM) :  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
     * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
     * Based on the ‘Nearest Neighbor Distance Mult’ (default 2.0), generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
@@ -280,55 +280,65 @@ UI Elements:
     * Apply those weights to the source vert.
   * Closest Point : This is a simple system, that will find the closest target vert to source, and apply it’s saved weights.
   * Via the API calls though, you can add your own solutions if you don't like these (the UI won't support it without an update, but the back end will).
-* **Use Vert Normal Filter**
-  * If enabled, and if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  
-  * Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  
-  * The default is 0.75 : This means, match any target vert who’s normal is less than 25 deg different from the source (1.0 - 0.75 = 0.25).  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.  
+* **3: Vert Normal Options**
+  * If 'Use Vert Normal Filter' is enabled, and if the FSM is being used:  Try to only find target verts who’s dot product vs the source vert are greater than the provided ‘Vert Normal Tolerance’.  
+    * Dot product refresher: 1.0 : Both normals point the same direction. 0: Normal is perpendicular. -1 : Normal is opposite direction.  
+    * The default is 0.75 : This means, match any target vert who’s normal is less than 25 deg different from the source (1.0 - 0.75 = 0.25).  If the FSM ‘Closest Neighbors’ is being used, and no matching normals can be found within the search area, it defaults to closest point.  
   * There is no 'one size fits all' value that will work here, it's entirely based on the topology of the current mesh being imported onto, and what was exported from, so some experimentation may be needed.
   * In the below example, I show an example where a pair of 'pants' that have extremely overlapping mesh are exported. Then imported onto a new pant leg with the vert normal filter turned off, then on, to show how this can reduce stretching:
 ![skinner_importTab](images/vertNormalFilter.gif)
-* **Load By Vert Count / Order?**
-  * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.  If one is found, then the skinning is loaded on 1:1 by vert ID.  If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
-* **Build Missing Influences:**
-  * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning. If the mesh you're importing onto is already skinned, this will force it to go to the bindpose first. 
-  * They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  
-  * Since the user has the option of **not** exporting Skinner data in the bindpose, if the tool detects for this at time of export, it will instead store the value in the joint's ```bindPose``` attr, which is the worldspace matrix at time of skinning.  But this value is only valid if the joint is connected to a ```dagPose``` node (users could delete them), so if that is missing, and it's not in the bind pose, the existing worldspace matrix is used, which is probably not what yout want, but all we can query under the circumstances.
-  * The tool wil do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
-    * Generate every joint needed (parented to the world), set the stored rotate order, and apply its stored worldspace matrix.
-    * Look for the stored parent, and parent it if found.
-    * After parenting, apply the original/stored local transformations (translate, rotate, scale, rotateAxis, jointOrient).
-    * Compare the new worldspace matrix vs previous : If they're the same, leave the local transforms as is and continue.  If they're different, reset the stored world matrix.
-  * Technically, this can be used to rebuild the entire skeletal hierarchy that was exported, in a scene with no matching skeleton.  In general you can find good success with this, but (if auto-created by this tool) always check your root joint's transformation values vs whatever is your standard, since while it will have the correct worldspace transformations applied to it, it's local values may be off-standard if using a shared skeleton.
-  * If this is unchecked, and there are missing influences, the tool will error.
-* **Import Using Pre-Deformed Shape Positions?**
-  * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in any pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unecesary.  
-  * In Maya, the term for the 'pre-deformed' mesh shape node is the 'intermediate object', and by default those nodes get an ```Orig``` suffix (like ```myMeshNameShapeOrig```).  The below gif shows their relationship to the deformation history, and how to enable/show and disable/hide them.  The 'green' mesh is the pre-deformed shape / intermedite object that is queried both at SkinChunk export time, and during import, if this options is checked:
+* **4 :  Posing Options**
+  * 'Set To Bindpose?'
+    * If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or before the ‘Unbind First’ operation is ran, if checked  below).
+    * If for any reason the bindpose can’t be set for a given ```dagPose``` node, there will be an error.
+    * If there is no ```dagPose``` node for that ```skinCluster``` / influences, it will be skipped without error.
+    * If 'Import Using Pre-Deformed Shape Positions' is checked, this will be unchecked. 
+  * Import Using Pre-Deformed Shape Positions? : 
+    * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in any pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unecesary.  
+    * In Maya, the term for the 'pre-deformed' mesh shape node is the 'intermediate object', and by default those nodes get an ```Orig``` suffix (like ```myMeshNameShapeOrig```).  The below gif shows their relationship to the deformation history, and how to enable/show and disable/hide them.  The 'green' mesh is the pre-deformed shape / intermedite object that is queried both at SkinChunk export time, and during import, if this options is checked:
 ![skinner_importTab](images/preDeformedShape.gif)
-* **Set To Bindpose:**
-  * If 'Import Using Pre-Deformed Shape Positions' is checked, this should be unchecked.  If this is checked, and if you’re importing onto mesh that is already skinned:  Set it to bindpose before the import (or before the ‘Unbind First’ operation is ran, if checked  below).  If for any reason the bindpose can’t be set for a given ```dagPose``` node, there will be an error.  If there is no ```dagPose``` node for that ```skinCluster```/influences, it will be skipped without error.
-* **Unbind First?**
-  * If this is checked (and after ‘Set To Bindpose’ happens, if checked), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked? : 
-    * Check it: 
-      * If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  
-      * If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how does all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
-    * Uncheck it: 
-      * If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
-      * If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
-* **Force From ```UberChunk```?**
-  * Mostly for debugging:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
-* **Select Instead Of Skin:**
-  * Mostly for debugging : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
-* **Smooth Steps:**
-  * If a FSM is used, based on the below conditions, a smoothing pass can be ran to improve the results. 
-  * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
-  * Continuing the logic, if the vert count of the source mesh is less than that of the target ```SkinChunk```/```UberChunk```, then no smoothing will be performed, since we have a larger target sample-set than we do source verts.
-  * Note, if smoothing is performed, it only acts on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weights 1:1 as-is.   
-  * Set this value to 0 to disable entirely.  How this acts is also modifed by the 'Weight Difference Threshold', below:
-* **Weight Difference Threshold:** : Added 1.1.7
-  * If the 'Smooth Steps' (above) is a positive value, and those conditions are met:  Only verts that have a 'difference in weights' greater than this value will be smoothed.
-  * The default is 0.25 : This means, that if abs(vertWeightA - vertWeightB) > 0.25, that vert's weights will be smoothed.
-  * The **smaller** you make this value, the more verts will be smoothed, and the **larger** you make this value, the fewer verts will be smoothed.
-* **Print Import Overview:**
+    * If 'Set To Bindpose?' is checked, this will be unchecked. 
+* **5 : Influence Options**
+  * Build Missing Influences
+    * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning. If the mesh you're importing onto is already skinned, this will force it to go to the bindpose first. 
+    * They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  
+    * Since the user has the option of **not** exporting Skinner data in the bindpose, if the tool detects for this at time of export, it will instead store the value in the joint's ```bindPose``` attr, which is the worldspace matrix at time of skinning.  But this value is only valid if the joint is connected to a ```dagPose``` node (users could delete them), so if that is missing, and it's not in the bind pose, the existing worldspace matrix is used, which is probably not what yout want, but all we can query under the circumstances.
+    * The tool wil do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
+      * Generate every joint needed (parented to the world), set the stored rotate order, and apply its stored worldspace matrix.
+      * Look for the stored parent, and parent it if found.
+      * After parenting, apply the original/stored local transformations (translate, rotate, scale, rotateAxis, jointOrient).
+      * Compare the new worldspace matrix vs previous : If they're the same, leave the local transforms as is and continue.  If they're different, reset the stored world matrix.
+    * Technically, this can be used to rebuild the entire skeletal hierarchy that was exported, in a scene with no matching skeleton.  In general you can find good success with this, but (if auto-created by this tool) always check your root joint's transformation values vs whatever is your standard, since while it will have the correct worldspace transformations applied to it, it's local values may be off-standard if using a shared skeleton.
+    * If this is unchecked, and there are missing influences, the tool will error.
+  * Unbind First?
+    * If this is checked (and after ‘Set To Bindpose’ happens, if checked), if any mesh was previously skinned, it will be unskinned before the new weights are imported.  Why would you / wouldn’t you want this checked? : 
+      * Check it: 
+        * If you encounter certain skin import errors:  I’ve found certain ‘old’ skinCluster data doesn’t like being updated by this tool, and will error.  Checking this will apply ‘new skinning’, and get past that error.  
+        * If you’re importing only a subset of vert data onto a ‘whole mesh’ and this is checked, you may ask, how does all the other verts get skinned?  The tool will first do a ‘default Maya bind’ on the mesh based on the saved influences, then load in the weight on the vert subset.
+      * Uncheck it: 
+        * If you’re copying a subset of vert weight data from one mesh to another, and want to keep the previous skinning on the rest of the mesh that wasn’t selected.
+        * If for some reason your skeleton isn’t in the bindpose, and you want to leave it in that pose when the new weights are imported.
+* **6 :  Post-Skinning Smooth Options**
+  * Smooth Steps
+    * If a FSM is used, based on the below conditions, a smoothing pass can be ran to improve the results. 
+    * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
+    * Continuing the logic, if the vert count of the source mesh is less than that of the target ```SkinChunk```/```UberChunk```, then no smoothing will be performed, since we have a larger target sample-set than we do source verts.
+    * Note, if smoothing is performed, it only acts on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weights 1:1 as-is.   
+    * Set this value to 0 to disable entirely.  How this acts is also modifed by the 'Weight Difference Threshold', below:
+  * Weight Difference Threshold: : Added 1.1.7
+    * If the 'Smooth Steps' (above) is a positive value, and those conditions are met:  Only verts that have a 'difference in weights' greater than this value will be smoothed.
+    * The default is 0.25 : This means, that if abs(vertWeightA - vertWeightB) > 0.25, that vert's weights will be smoothed.
+    * The **smaller** you make this value, the more verts will be smoothed, and the **larger** you make this value, the fewer verts will be smoothed.
+* **7 :  Debug Options**
+  * Load By Vert Count / Order?
+    * If a FSM is triggered to be used, and this is checked: If there is no initial ```SkinChunk``` name match, the tool will search through all the ```SkinChunk```s to see if there is one that has the same vert count/order.
+    * If one is found, then the skinning is loaded on 1:1 by vert ID.
+    * If no match is found, or more than one match is found, then the FSM is used based on the point cloud of that ```SkinChunk```/```UberChunk```.  Usually you want this checked, and it makes it easy to copy skinning between the ‘same mesh’ that has ‘different names’.
+  * Force From ```UberChunk```?
+    * Mostly for debugging:  Make everything read in from the ```UberChunk``` point cloud using the active FSM.
+  * Select Instead Of Skin:
+    * Mostly for debugging : If the ```SkinChunk``` data you’re importing from was a subset of verts, select the same subset of verts on the source mesh for preview purposes.
+* **8 : Print Import Overview**
   * In addition to ‘verbose logging’ that can be found in the Extras tab:  If this is checked, an ‘overview’ of the import will be printed to the Script Editor.  It has two modes that will change how the data is printed.  It should be noted that regardless of the mode picked, it will group the data by successful/unsuccessful import:
   * By Import Type: This will group the overview by the solution used to import the weights : by vert ID, by FSM, etc.
   * By Mesh Name : This will group the overview by the individual mesh names.
@@ -417,6 +427,12 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 * **Skinner Package Path** : (v1.1.3) Just an FYI to tell the user where the Skinner tool is installed.
 * **Print sknr file info…**
   *  The ```.sknr``` file format is binary : It’s pickled Python data.  Because of that, it’s not human readable.  This section can be used to browse to, and print information in a ```.sknr``` file to the Script Editor, based on the checkboxes set, and the min/max print indices (to help limit how much info is printed for large files).
+* **Auto-Fix Broken skinCluster** (added v1.2.0)
+  * There's a really weird bug that sometimes when you import skinning, the tool fails, with this error:
+    * ```'(kInvalidParameter): Object is incompatible with this method'```
+  * I've found that sometimes (but not always), trying to load skinning onto a skinCluster that wasn't made by this tool, will trigger that error.
+  * It appears to be something 'bad' in the skinCluster itself preventing the new weights from being set.  Much debugging/diffing of mayaAscii files hasn't turned up anything.
+  * The fix is simple:  Export temp skinning on the mesh, unbind it, and reimport the skinning, to get a 'new' (and much happier) skinCluster built, so that future sknr imports work better.
 # Skinner Concepts
   
 ## The .sknr file format
