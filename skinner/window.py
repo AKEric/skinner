@@ -36,6 +36,9 @@ Updates:
     2021-12-30 : v1.1.2 : Updating all source to use Python3 type hint notation.
     2021-12-30 : v1.1.3 : Updating Window extras tab with separators and install path.
     2022-03-09 : v1.1.7 : Updating to add additional post-smoothing options.
+    2024-06-10 : v1.2.0 : Rearranging some of the App import UI elements.  Bugfixing
+        App.importSkin : It wasn't closing the undoChunk.  Adding the 'Auto-Fix Broken
+        skinCluster' to the 'Extras' tab.  Updating tooltips, making multi-line.
 
 Examples:
 
@@ -223,7 +226,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     layout_importPath = QtWidgets.QHBoxLayout()
                     layout_import.addLayout(layout_importPath)
                     if layout_importPath:
-                        layout_importPath.addWidget(QtWidgets.QLabel("Path:"))
+                        layout_importPath.addWidget(QtWidgets.QLabel("1: Path:"))
                         self.widget_importPath = QtWidgets.QLineEdit()
                         self.widget_importPath.setReadOnly(True)
                         layout_importPath.addWidget(self.widget_importPath)
@@ -243,7 +246,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     layout_fbSkinMethod = QtWidgets.QHBoxLayout()
                     layout_import.addLayout(layout_fbSkinMethod)
                     if layout_fbSkinMethod:
-                        widget_fallBackLabel = QtWidgets.QLabel("Fallback Skinning Method:")
+                        widget_fallBackLabel = QtWidgets.QLabel("2: Fallback Skinning Method (FSM):")
                         layout_fbSkinMethod.addWidget(widget_fallBackLabel)
                         widget_fallBackLabel.setToolTip("For each mesh, if the vert count/order isn't 1:1, the algorithm to use to generate the new weights.")
 
@@ -276,7 +279,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         widget_numNearNeighborsLabel = QtWidgets.QLabel("Number Closest Neighbors:")
                         layout_nnOptions.addWidget(widget_numNearNeighborsLabel)
                         self.nnOptions.append(widget_numNearNeighborsLabel)
-                        widget_numNearNeighborsLabel.setToolTip("Interpolate weights based on these number of neighbor verts, as long as they're within 'closest vert distance * nearest neighbor distance mult'. Zero or less means use all the neighbors found within that distance.")
+                        widget_numNearNeighborsLabel.setToolTip("Interpolate weights based on these number of neighbor verts, as long as they're within 'closest vert distance * nearest neighbor distance mult'.\nZero or less means use all the neighbors found within that distance.")
                         self.widget_nearestNeighborNum = QtWidgets.QLineEdit()
                         nearNeighborValidator = QtGui.QIntValidator()
                         nearNeighborValidator.setBottom(0)
@@ -291,7 +294,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         widget_nearNeighborDistMultLabel = QtWidgets.QLabel("Nearest Neighbor Distance Mult:")
                         layout_nnOptions.addWidget(widget_nearNeighborDistMultLabel )
                         self.nnOptions.append(widget_nearNeighborDistMultLabel)
-                        widget_nearNeighborDistMultLabel.setToolTip("Based on the distance to the closest target vert, what size radius (based on multiply by this value) around that should be searched for 'neigbor verts'?")
+                        widget_nearNeighborDistMultLabel.setToolTip("Based on the distance to the closest target vert, what size radius (based on multiply by this value)\naround that should be searched for 'neigbor verts'?")
                         self.widget_nearestNeighborDistMult = QtWidgets.QLineEdit()
                         nearNeighborValidator = QtGui.QDoubleValidator()
                         nearNeighborValidator.setBottom(1.0)
@@ -307,7 +310,10 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     layout_vertNormal = QtWidgets.QHBoxLayout()
                     layout_import.addLayout(layout_vertNormal)
                     if layout_vertNormal:
-                        tt_vertNormal = "Used to reduce 'stretching' source verts during import when there was overlapping mesh during export: If checked, target verts that don't have their normals within the tolerance to a source vert will be rejecetd."
+                        layout_vertNormal.addWidget(QtWidgets.QLabel("3: Vert Normal Options:"))
+                        layout_vertNormal.addStretch()
+
+                        tt_vertNormal = "Used to reduce 'stretching' source verts during import when there was overlapping mesh during export:\nIf checked, target verts that don't have their normals within the tolerance to a source vert will be rejecetd."
                         self.widget_useVertNormal = QtWidgets.QCheckBox("Use Vert Normal Filter")
                         self.widget_useVertNormal.setToolTip(tt_vertNormal)
                         layout_vertNormal.addWidget(self.widget_useVertNormal)
@@ -315,6 +321,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                             self.widget_useVertNormal.setChecked(True)
                         self.widget_useVertNormal.clicked.connect(self.cbVertNormal)
                         layout_vertNormal.addStretch()
+
                         self.widget_vertNormalTolleranceLabel = QtWidgets.QLabel("Vert Normal Tolerance:")
                         self.widget_vertNormalTolleranceLabel.setToolTip(tt_vertNormal)
                         layout_vertNormal.addWidget(self.widget_vertNormalTolleranceLabel)
@@ -331,74 +338,62 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         if not self.settings.value(SETTING_VERT_NORMAL_FILTER, 0):
                             self.widget_vertNormalTollerance.setDisabled(True)
                             self.widget_vertNormalTolleranceLabel.setDisabled(True)
-
-                        layout_vertNormal.addWidget(makeSeparator(mode="vertical"))
-
                         layout_vertNormal.addStretch()
-                        tt_loadByVertCountOrder = "If a mesh can't find a SkinChunk name match, should it try to find one by vert count / order match? You generally want this checked on."
-                        self.widget_loadByVeryCountOrderCheck = QtWidgets.QCheckBox("Load By Vert Count / Order?")
-                        self.widget_loadByVeryCountOrderCheck.setToolTip(tt_loadByVertCountOrder)
-                        if self.settings.value(SETTING_LOAD_BY_VERT_COUNT_NORMAL, True):
-                            self.widget_loadByVeryCountOrderCheck.setChecked(True)
-                        layout_vertNormal.addWidget(self.widget_loadByVeryCountOrderCheck)
-                        self.widget_loadByVeryCountOrderCheck.clicked.connect(self.cbLoadVyVertcountOrder)
+                    layout_import.addWidget(makeSeparator())
 
 
-                    layout_moreOptions = QtWidgets.QGridLayout()
-                    layout_import.addLayout(layout_moreOptions)
-                    if layout_moreOptions:
-                        self.widget_buildMissingInfs = QtWidgets.QCheckBox("Build Missing Influences?")
-                        layout_moreOptions.addWidget(self.widget_buildMissingInfs, 0,0)
-                        self.widget_buildMissingInfs.setToolTip("Build any missing joint influences this skinning counts on?  If any are missing, the skin import will fail.")
-                        if self.settings.value(SETTING_BUILD_MISSING_INFS, True):
-                            self.widget_buildMissingInfs.setChecked(True)
-                        self.widget_buildMissingInfs.clicked.connect(self.cbMissingInfs)
+                    layout_poseOptions = QtWidgets.QHBoxLayout()
+                    layout_import.addLayout(layout_poseOptions)
+                    if layout_poseOptions:
 
-                        self.widget_usePreDeformedShape = QtWidgets.QCheckBox("Import Using Pre-Deformed Shape Positions?")
-                        layout_moreOptions.addWidget(self.widget_usePreDeformedShape, 0,1)
-                        self.widget_usePreDeformedShape.setToolTip("If checked and a 'Fallback Skinning Method' is used during import, use the positions of the pre-deformed shape node (intermediateObject) for import, rather than the current (possibly deformed) worldspace locations.  This also uses the 'pre-deformed' worldspace positions in the SkinChunk. Usually you want this on.")
-                        if self.settings.value(SETTINGS_IMPORT_USE_PRE_DEFORMED_SHAPE, True):
-                            self.widget_usePreDeformedShape.setChecked(True)
-                        self.widget_usePreDeformedShape.clicked.connect(self.cbImpoprtUsingPreDeformedShapePos)
+                        layout_poseOptions.addWidget(QtWidgets.QLabel("4: Posing Options:"))
+
+                        #layout_poseOptions.addStretch()
 
                         self.widget_importSetBindpose = QtWidgets.QCheckBox("Set To Bindpose?")
-                        layout_moreOptions.addWidget(self.widget_importSetBindpose, 0,2)
-                        self.widget_importSetBindpose.setToolTip("Set all influences to their bindpose before exporring the new data?  Unnecessary if 'Import Using Pre-Deformed Shape' is checked. This happens before 'Unbind First'")
+                        layout_poseOptions.addWidget(self.widget_importSetBindpose)
+                        self.widget_importSetBindpose.setToolTip("Set all influences to their bindpose before importing the new data?\nUnnecessary if 'Import Using Pre-Deformed Shape' is checked. This happens before 'Unbind First'")
                         if self.settings.value(SETTING_IMPORT_SET_TO_BINDPOSE, False):
                             self.widget_importSetBindpose.setChecked(True)
                         self.widget_importSetBindpose.clicked.connect(self.cbImportSetToBindpose)
+                        #layout_poseOptions.addStretch()
+
+                        self.widget_usePreDeformedShape = QtWidgets.QCheckBox("Import Using Pre-Deformed Shape Positions?")
+                        layout_poseOptions.addWidget(self.widget_usePreDeformedShape)
+                        self.widget_usePreDeformedShape.setToolTip("If checked and a 'Fallback Skinning Method' is used during import, use the positions of the pre-deformed shape node (intermediateObject) for import,\nrather than the current (possibly deformed) worldspace locations.\nThis also uses the 'pre-deformed' worldspace positions in the SkinChunk.")
+                        if self.settings.value(SETTINGS_IMPORT_USE_PRE_DEFORMED_SHAPE, True):
+                            self.widget_usePreDeformedShape.setChecked(True)
+                        self.widget_usePreDeformedShape.clicked.connect(self.cbImpoprtUsingPreDeformedShapePos)
+                    layout_import.addWidget(makeSeparator())
+
+                    layout_moreOptions = QtWidgets.QHBoxLayout()
+                    layout_import.addLayout(layout_moreOptions)
+                    if layout_moreOptions:
+                        layout_moreOptions.addWidget(QtWidgets.QLabel("5: Influence Options:"))
+
+                        self.widget_buildMissingInfs = QtWidgets.QCheckBox("Build Missing Influences?")
+                        layout_moreOptions.addWidget(self.widget_buildMissingInfs)
+                        self.widget_buildMissingInfs.setToolTip("Build any missing joint influences (+ try to reparent them) this skinning counts on?\nIf any are missing, the skin import will fail.")
+                        if self.settings.value(SETTING_BUILD_MISSING_INFS, True):
+                            self.widget_buildMissingInfs.setChecked(True)
+                        self.widget_buildMissingInfs.clicked.connect(self.cbMissingInfs)
+                        #layout_moreOptions.addStretch()
 
                         self.widget_unbindFirst = QtWidgets.QCheckBox("Unbind First?")
-                        layout_moreOptions.addWidget(self.widget_unbindFirst, 0,3)
-                        self.widget_unbindFirst.setToolTip("If any mesh is currently skinned, unbind it before import?  This will set the mesh back to the bindpose before skinning import. Otherwise the old/new skinning is merged together.  If you get crashes during load, setting this to True can help.")
+                        layout_moreOptions.addWidget(self.widget_unbindFirst)
+                        self.widget_unbindFirst.setToolTip("If any mesh is currently skinned, unbind it before import?\nThis will set the mesh back to the bindpose before the import.\nOtherwise the old/new skinning is merged together.")
                         if self.settings.value(SETTING_UNBIND_FIRST, True):
                             self.widget_unbindFirst.setChecked(True)
                         self.widget_unbindFirst.clicked.connect(self.cbUnbindFirst)
-
-                        layout_moreOptions.addWidget(QtWidgets.QLabel("Debug Options:"), 1,0)
-
-                        self.widget_forceUberChunk = QtWidgets.QCheckBox("Force Import From UberChunk?")
-                        layout_moreOptions.addWidget(self.widget_forceUberChunk, 1,1)
-                        self.widget_forceUberChunk.setToolTip("Force the weight import to use the point-cloud data in the UberChunk, instead of trying to find SkinChunk mesh name matches.")
-                        if self.settings.value(SETTING_FORCE_UBERCHUNK, False):
-                            self.widget_forceUberChunk.setChecked(True)
-                        self.widget_forceUberChunk.clicked.connect(self.cbForceUberChunk)
-
-                        self.widget_selectInstead = QtWidgets.QCheckBox("Select Instead Of Skin")
-                        layout_moreOptions.addWidget(self.widget_selectInstead, 1,2)
-                        self.widget_selectInstead.setToolTip("Instead of importing/applying the skinning, select the verts that will get skinning applied based on the loaded data.")
-                        if self.settings.value(SETTING_SELECT_INSTEAD, False):
-                            self.widget_selectInstead.setChecked(True)
-                        self.widget_selectInstead.clicked.connect(self.cbSelInstead)
+                    layout_import.addWidget(makeSeparator())
 
                     layout_postSmooth = QtWidgets.QHBoxLayout()
                     layout_import.addLayout(layout_postSmooth)
                     if layout_postSmooth:
-                        tt_smooth = "If skin weights are loaded by any method than 1:1 vert order, should the tool apply any post-smoothing to make it look better?  It wil only smooth if the source mesh has more verts than the target SkinChunk."
-                        widget_smoothLabel = QtWidgets.QLabel("Post-Skinning Smooth Options:")
+                        tt_smooth = "If skin weights are loaded by FSM (meaning, not 1:1 vert order), should the tool apply any post-smoothing to make it look better?\nIt wil only smooth if the source mesh has more verts than the target SkinChunk."
+                        widget_smoothLabel = QtWidgets.QLabel("6: Post-Skinning Smooth Options:")
                         layout_postSmooth.addWidget(widget_smoothLabel)
                         widget_smoothLabel.setToolTip(tt_smooth)
-
                         layout_postSmooth.addStretch()
 
                         tt_postSmoothSteps = "This is the number of iterations, set to 0 to disable. 2 is default."
@@ -415,7 +410,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                         layout_postSmooth.addStretch()
 
-                        tt_postSmoothWeightDiff = "Weights will only be smoothed if their difference is GREATER than this value. Range from 0.01 -> 1.0, default 0.25 : *Smaller* values here will smooth *more* weights."
+                        tt_postSmoothWeightDiff = "Weights will only be smoothed if their difference is GREATER than this value.\nRange from 0.01 -> 1.0, default 0.25 : *Smaller* values here will smooth *more* weights."
                         widget_postSmoothWeightDiffLabel = QtWidgets.QLabel("Weight Difference Threhold:")
                         layout_postSmooth.addWidget(widget_postSmoothWeightDiffLabel)
                         widget_postSmoothWeightDiffLabel.setToolTip(tt_postSmoothWeightDiff)
@@ -434,11 +429,44 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         layout_postSmooth.addStretch()
 
 
+                    layout_import.addWidget(makeSeparator())
+                    layout_debugOptions = QtWidgets.QHBoxLayout()
+                    layout_import.addLayout(layout_debugOptions)
+                    if layout_debugOptions:
+
+                        layout_debugOptions.addWidget(QtWidgets.QLabel("7: Debug Options:"))
+                        layout_debugOptions.addStretch()
+
+                        tt_loadByVertCountOrder = "Default On: If a mesh can't find a SkinChunk name match, should it try to find one by vert count / order match?\nUsually this is only disabled for debugging purposes."
+                        self.widget_loadByVeryCountOrderCheck = QtWidgets.QCheckBox("Load By Vert Count / Order?")
+                        self.widget_loadByVeryCountOrderCheck.setToolTip(tt_loadByVertCountOrder)
+                        if self.settings.value(SETTING_LOAD_BY_VERT_COUNT_NORMAL, True):
+                            self.widget_loadByVeryCountOrderCheck.setChecked(True)
+                        layout_debugOptions.addWidget(self.widget_loadByVeryCountOrderCheck)
+                        self.widget_loadByVeryCountOrderCheck.clicked.connect(self.cbLoadVyVertcountOrder)
+                        layout_debugOptions.addStretch()
+
+                        self.widget_forceUberChunk = QtWidgets.QCheckBox("Force Import From UberChunk?")
+                        layout_debugOptions.addWidget(self.widget_forceUberChunk)
+                        self.widget_forceUberChunk.setToolTip("Default Off: Force the weight import to use the point-cloud data in the UberChunk,\ninstead of trying to find SkinChunk mesh name matches.")
+                        if self.settings.value(SETTING_FORCE_UBERCHUNK, False):
+                            self.widget_forceUberChunk.setChecked(True)
+                        self.widget_forceUberChunk.clicked.connect(self.cbForceUberChunk)
+                        layout_debugOptions.addStretch()
+
+                        self.widget_selectInstead = QtWidgets.QCheckBox("Select Instead Of Skin")
+                        layout_debugOptions.addWidget(self.widget_selectInstead)
+                        self.widget_selectInstead.setToolTip("Default Off: Instead of importing/applying the skinning, select the verts that will get skinning applied based on the loaded data.\nNote, this will fail if any of the import options will cause the existing skinCluster dasta to be changed (like adding missing influences).")
+                        if self.settings.value(SETTING_SELECT_INSTEAD, False):
+                            self.widget_selectInstead.setChecked(True)
+                        self.widget_selectInstead.clicked.connect(self.cbSelInstead)
+
+                    layout_import.addWidget(makeSeparator())
 
                     layout_printOptions = QtWidgets.QHBoxLayout()
                     layout_import.addLayout(layout_printOptions)
                     if layout_printOptions:
-                        widget_printReportLabel = QtWidgets.QLabel("Print Import Overview:")
+                        widget_printReportLabel = QtWidgets.QLabel("8: Print Import Overview:")
                         layout_printOptions.addWidget(widget_printReportLabel)
                         widget_printReportLabel.setToolTip("Should an 'import overview' report be printed to the Script Editor?")
                         self.widget_importOvererviewGroup = QtWidgets.QButtonGroup()
@@ -507,7 +535,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     if layout_exportButs:
 
                         self.widget_exportSetBindpose = QtWidgets.QCheckBox("Set To Bindpose?")
-                        self.widget_exportSetBindpose.setToolTip("If checked, set all influence to their bindpose before exporting the Skinner weights. Good to have checked so as to store out the bindpose transforms for the joints, so they can be rebuilt correctly during import.  But not needed if that isn't a concern.")
+                        self.widget_exportSetBindpose.setToolTip("If checked, set all influence to their bindpose before exporting the Skinner weights.\nGood to have checked so as to store out the bindpose transforms for the joints, so they can be rebuilt correctly during import.\nBut not needed if that isn't a concern.")
                         layout_exportButs.addWidget(self.widget_exportSetBindpose,0,0)
                         if self.settings.value(SETTING_EXPORT_SET_TO_BINDPOSE, True):
                             self.widget_exportSetBindpose.setChecked(True)
@@ -538,7 +566,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         self.widget_vcCmd = QtWidgets.QLineEdit(vcCmd)
                         self.widget_vcCmd.editingFinished.connect(self.cbVcCmd)
                         layout_vcExecCmd.addWidget(self.widget_vcCmd)
-                        self.widget_vcCmd.setToolTip("Enter the command that should be executed to add/edit the exported file to your version control: It must include a string formatted \"'%s'\" in it, to string-format in the filepath. You can separte multiple calls by ending them with a semicolon ;")
+                        self.widget_vcCmd.setToolTip("Enter the command that should be executed to add/edit the exported file to your version control:\nIt must include a string formatted \"'%s'\" in it, to string-format in the filepath.\nYou can separte multiple calls by ending them with a semicolon ;")
                         if self.vcExecCmd:
                             self.widget_vcCmd.setEnabled(False)
                     layout_vcDepotRoot = QtWidgets.QHBoxLayout()
@@ -553,7 +581,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         self.widget_depotRoot = QtWidgets.QLineEdit(depotRoot)
                         self.widget_depotRoot.setReadOnly(True)
                         layout_vcDepotRoot.addWidget(self.widget_depotRoot)
-                        self.widget_depotRoot.setToolTip("Only files living under this directory will be added to your version control. Leaving this empty will disable version control. To clear it, open the browser, and then cancel.")
+                        self.widget_depotRoot.setToolTip("Only files living under this directory will be added to your version control.\nLeaving this empty will disable version control. To clear it, open the browser, and then cancel.")
                         if self.vcDepotRoot:
                             self.widget_depotRoot.setEnabled(False)
 
@@ -576,7 +604,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                     if layout_extrasGrid:
                         widget_runTest = QtWidgets.QPushButton("Run the 'skinner test suite'?")
                         layout_extrasGrid.addWidget(widget_runTest, 0,0)
-                        widget_runTest.setToolTip("This will prompt the user to create a new empty scene, and run a series of tests: The results will be printed to the Script Editor")
+                        widget_runTest.setToolTip("This will prompt the user to create a new empty scene, and run a series of tests:\nThe results will be printed to the Script Editor")
                         widget_runTest.clicked.connect(core.test)
 
                         layout_docs = QtWidgets.QHBoxLayout()
@@ -593,7 +621,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                         self.widget_verboseLogging = QtWidgets.QCheckBox("Verbose Logging?")
                         layout_extrasGrid.addWidget(self.widget_verboseLogging, 1,0)
-                        self.widget_verboseLogging.setToolTip("Print verbose results of the import/export operations to the Maya Script Editor?  If this is unchecked, nothing (unless errors) will be printed to the Script Editor.")
+                        self.widget_verboseLogging.setToolTip("Print verbose results of the import/export operations to the Maya Script Editor?\nIf this is unchecked, nothing (unless errors) will be printed to the Script Editor.")
                         if self.settings.value(SETTING_VERBOSE_LOG, True):
                             self.widget_verboseLogging.setChecked(True)
                         self.widget_verboseLogging.clicked.connect(self.cbVerboseLog)
@@ -601,24 +629,31 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         layout_autoFill = QtWidgets.QHBoxLayout()
                         layout_extrasGrid.addLayout(layout_autoFill, 1,1)
                         if layout_autoFill:
-                            layout_autoFill.addWidget(QtWidgets.QLabel("'Auto-Fill' Subdir:"))
+                            tt_autoFill = "If provided (optional), this is some subdir of the currently open scene where the Import & Export tab's '<- Auto-Fill' tools will update the paths to."
+                            widget_autoFillLabel = QtWidgets.QLabel("'Auto-Fill' Subdir:")
+                            layout_autoFill.addWidget(widget_autoFillLabel)
+                            widget_autoFillLabel.setToolTip(tt_autoFill)
                             autoFillDir = None
                             if self.autoFillSubdir:
                                 autoFillDir = self.autoFillSubdir
                             else:
                                 autoFillDir = self.settings.value(SETTING_AUTO_FILL_DIR, "")
                             self.widget_autoFillDir = QtWidgets.QLineEdit(autoFillDir)
-                            self.widget_autoFillDir.setToolTip("If provided (optional), this is some subdir of the currently open scene where the '<- Auto-Fill' tools will update the paths to.")
+                            self.widget_autoFillDir.setToolTip(tt_autoFill)
                             self.widget_autoFillDir.editingFinished.connect(self.cbAutoFillSubdir)
                             layout_autoFill.addWidget(self.widget_autoFillDir)
                             if self.autoFillSubdir:
                                 self.widget_autoFillDir.setEnabled(False)
 
                         packageDir = os.path.dirname(__file__)
-                        layout_extrasGrid.addWidget(QtWidgets.QLabel(f"Package Path:"), 2,0, QtCore.Qt.AlignRight)
+                        tt_packagePath = "The location where the Skinner Python package is saved."
+                        widget_packagePathLabel = QtWidgets.QLabel(f"Package Path:")
+                        widget_packagePathLabel.setToolTip(tt_packagePath)
+                        layout_extrasGrid.addWidget(widget_packagePathLabel, 2,0, QtCore.Qt.AlignRight)
                         widget_packagePath = QtWidgets.QLineEdit(packageDir)
                         widget_packagePath.setReadOnly(True)
                         layout_extrasGrid.addWidget(widget_packagePath, 2,1)
+                        widget_packagePath.setToolTip(tt_packagePath)
 
                         # ----------
                         # sknr / SkinChunk Printing:
@@ -643,7 +678,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
 
                             layout_printButs.addWidget(widget_minMaxIndices, 0, 1)
                             if widget_minMaxIndices:
-                                tt_minMaxIndices = "There could be a lot of stuff to print:  Here, you can control the range of vert index info that is printed.  Min 0 starts at the beginning.  Max 0 prints until the end. Max supports negative indices "
+                                tt_minMaxIndices = "There could be a lot of stuff to print:\nHere, you can control the range of vert index info that is printed.\nMin 0 starts at the beginning.\nMax 0 prints until the end. Max supports negative indices "
                                 layout_minMaxIndices = QtWidgets.QHBoxLayout()
                                 widget_minMaxIndices.setLayout(layout_minMaxIndices)
                                 label_minMaxIndices = QtWidgets.QLabel("Min/Max Print Indices:")
@@ -700,6 +735,16 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                                 row += 1
 
                         layout_extrasGrid.setRowStretch(5,1)
+
+                layout_utils = QtWidgets.QHBoxLayout()
+                layout_extras.addLayout(layout_utils)
+                if layout_utils:
+
+                    widget_autoFixSkinCluster = QtWidgets.QPushButton("Auto-Fix Broken skinCluster")
+                    layout_utils.addWidget(widget_autoFixSkinCluster)
+                    widget_autoFixSkinCluster.setToolTip("For the selected (skinned) mesh, auto-export / reimport sknr skinning on it (unbinding it in the process):\nThis will regenrate the skinCluster, and can fix the import error:\n'(kInvalidParameter): Object is incompatible with this method'")
+                    widget_autoFixSkinCluster.clicked.connect(callback(core.regenrateSkinCluster))
+                    layout_utils.addStretch()
 
                 layout_extras.addStretch()
 
@@ -1043,6 +1088,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         else:
             self.settings.setValue(SETTING_UNBIND_FIRST, 0)
 
+
     #------------------
     # Actions
 
@@ -1145,21 +1191,34 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         closestNeighborCount = int(self.widget_nearestNeighborNum.text())
         closestNeighborDistMult = float(self.widget_nearestNeighborDistMult.text())
 
-        mc.undoInfo(openChunk=True, chunkName="importSkin")
+        if unbindFirst:
+            result = mc.confirmDialog(title="Confirm",
+                                      message=("'Unbind First?' is checked: Confirm this is the desired behavior?\n\n" + \
+                                                                "If you are importing onto only a subset of verts (vs the whole mesh), from SkinChunks that don't represent a 'similar point volume', this is often undesirable:\n" +\
+                                                                "The unselected verts will get default Maya skinning."),
+                                      button=("Continue", "Cancel"),
+                                      defaultButton="Continue", dismissString="Cancel",
+                                      cancelButton="Cancel")
+            if result == "Cancel":
+                return
 
-        result = core.importSkin(items=None, filePaths=paths, verbose=verbose,
-                                 printOverview=printOverview, printOverviewMode=printOverviewMode,
-                                 # kwargs passed to setWeights
-                                 fallbackSkinningMethod=fallbackSkinningMethod,
-                                 closestNeighborCount=closestNeighborCount,
-                                 closestNeighborDistMult=closestNeighborDistMult,
-                                 filterByVertNormal=filterByVertNormal,
-                                 vertNormalTolerance=vertNormalTolerance,
-                                 createMissingInfluences=buildMissingInfs,
-                                 setToBindPose=setToBindpose, importUsingPreDeformedPoints=importUsingPreDeformedPoints,
-                                 forceUberChunk=forceUberChunk, unskinFirst=unbindFirst,
-                                 selectVertsOnly=selInsteadOfSkin,
-                                 postSmooth=postSmoothSteps, postSmoothWeightDiff=postSmoothWeightDiff)
+        mc.undoInfo(openChunk=True, chunkName="importSkin")
+        try:
+            result = core.importSkin(items=None, filePaths=paths, verbose=verbose,
+                                     printOverview=printOverview, printOverviewMode=printOverviewMode,
+                                     # kwargs passed to setWeights
+                                     fallbackSkinningMethod=fallbackSkinningMethod,
+                                     closestNeighborCount=closestNeighborCount,
+                                     closestNeighborDistMult=closestNeighborDistMult,
+                                     filterByVertNormal=filterByVertNormal,
+                                     vertNormalTolerance=vertNormalTolerance,
+                                     createMissingInfluences=buildMissingInfs,
+                                     setToBindPose=setToBindpose, importUsingPreDeformedPoints=importUsingPreDeformedPoints,
+                                     forceUberChunk=forceUberChunk, unskinFirst=unbindFirst,
+                                     selectVertsOnly=selInsteadOfSkin,
+                                     postSmooth=postSmoothSteps, postSmoothWeightDiff=postSmoothWeightDiff)
+        finally:
+            mc.undoInfo(closeChunk=True, chunkName="importSkin")
 
         if result is False:
             mc.confirmDialog(title="Skinner Import Errors",
@@ -1176,7 +1235,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         try:
             utils.getMeshVertIds()
         except AssertionError:
-            om2.MGlobal.displayError("Skinner: No mesh/verts are selected to export skin weights on.")
+            om2.MGlobal.displayError("Skinner: No mesh/verts/joints are selected to export skin weights on.")
             return
 
         vcCmd = self.widget_vcCmd.text().strip()

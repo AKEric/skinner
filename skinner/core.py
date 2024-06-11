@@ -97,6 +97,10 @@ Updates:
         Also raising more expections if 'selectVertsOnly' is set and operations
         would happen that would change the skinning.  Various verbose logging formatting
         changes.
+    2024-06-10 : v1.2.0 : Setting setWeights's unskinFirst arg default to False,
+        was True. Adding regenrateSkinCluster.  Adding new tempFilePath arg, and
+        kwargs capturing to both exportTempSkin and importTempSkin.  Updating
+        the undoChunk closing code with specific names.
 
 Examples:
 
@@ -164,8 +168,9 @@ SKIN_METHODS = ("classic linear", "dual quaternion", "weight blended")
 
 EXT = "sknr"
 TEMP_DIR = os.path.join(tempfile.gettempdir(), "skinner")
-TEMP_FILE = "temp.%s"%EXT
+TEMP_FILE = f"temp.{EXT}"
 TEMP_FILE_PATH = os.path.join(TEMP_DIR, TEMP_FILE)
+TEMP_FILE_REGEN = f"temp_regen.{EXT}"
 
 # Maya optionVar settings
 OV_LAST_SAVE_PATH = "ov_skinner__lastSavePath"
@@ -1844,7 +1849,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                fallbackSkinningMethod="closestNeighbors",
                closestNeighborCount=6, closestNeighborDistMult=2.0,
                filterByVertNormal=False, vertNormalTolerance=0.0,
-               closestPointFunc=closestPointKdTree, unskinFirst=True,
+               closestPointFunc=closestPointKdTree, unskinFirst=False,
                setToBindPose=False, importUsingPreDeformedPoints=True,
                forceUberChunk=False, matchByVertCountOrder=True,
                postSmooth=2, postSmoothWeightDiff=0.25,
@@ -1888,7 +1893,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
         as an arg so you can pass in your own, if you got something faster than
         what this tool uses.  See the docstring of closestPointExample if you want
         to roll your own.
-    unskinFirst : bool : Default True : If True, and a mesh having weights imported
+    unskinFirst : bool : Default False : If True, and a mesh having weights imported
         on it is already skinned:  Unskin it first.  Note:  It appears that the
         plugin command to set weights will occasionally crash if this is set to
         False, and the skinCluster that its setting weights on wasn't previously
@@ -1960,6 +1965,8 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                 some were missing and createMissingInfluences=True. v1.0.15
         This data can be used to generate 'import reports' for users.
     """
+
+
     closestNeighborCountStr = str(closestNeighborCount)
     if closestNeighborCount == -1:
         closestNeighborCountStr = "All"
@@ -2637,11 +2644,11 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
                         print(f"\t\t\tMaya Runtime Error: '{e}'")
                         if not unskinFirst:
                             print("\t\t\tBased on the above error:  There's an issue where some mesh with existing skinCluster data reject new weights being applied.  Two ways to fix:")
-                            print("\t\t\t\t#1: The 'unskinFirst' arg is currently set to False : Changing this to True and trying again can fix this error, since it will delete & rebuild the skinCluster in the process.  Only do this if you're reimporting skinning on a whole mesh, not a subset of verts.")
-                            print("\t\t\t\t#2: Export 'temp skinning' on the mesh, then import it with the 'unskinFirst' arg set, to reload the existing skinning and rebuild the skinnCluster.  Then, re-run this tool to get the new skinning applied.")
+                            print("\t\t\t\t#1: Auto: Select the mesh, and use the 'Extra' tab in the Skinner window, and access 'Auto-Fix Broken skinCluster' tool, to auto-export & reimport the mesh's skinning to rebuild the skinnCluster.  Then, re-run this tool to get the new skinning applied.")
+                            print("\t\t\t\t#2: Manually:  The 'unskinFirst' arg is currently set to False : Changing this to True and trying again can fix this error, since it will delete & rebuild the skinCluster in the process.  Only do this if you're reimporting skinning on a whole mesh, not a subset of verts.")
                         thisRetData["success"] = False
                     finally:
-                        mc.undoInfo(closeChunk=True)
+                        mc.undoInfo(closeChunk=True, chunkName="setWeights undoHack")
 
                     #--------------------
                     # Post Smoothing
@@ -2739,7 +2746,7 @@ def setWeights(items:list, skinChunks=None, filePath=None, createMissingInfluenc
             mc.select(selectMe)
 
     finally:
-        mc.undoInfo(closeChunk=True)
+        mc.undoInfo(closeChunk=True, chunkName="setWeights")
         timeEnd = time.time()
 
     if verbose:
@@ -3033,10 +3040,11 @@ def importSkin(items=None, filePaths=None, verbose=True, printOverview=True, pri
 
 #------------
 
-def exportTempSkin(items=None, verbose=True):
+def exportTempSkin(items=None, verbose=True, tempFilePath=TEMP_FILE_PATH, **kwargs):
     r"""
     Export SkinChunks to the temp file.  Can be read back into this Maya instance,
-    or any other open Maya instance.
+    or any other open Maya instance.  Will use the default args to exportSkin
+    unless overridden by kwargs.
 
     Parameters:
     items : None/list : Default None : If None, use the active selection (mesh,
@@ -3046,6 +3054,11 @@ def exportTempSkin(items=None, verbose=True):
         in a single root group/transform, and it will act on all child mesh.  Pass
         in a single vert, and that's all it'll work on.  Mix and match!
     verbose : bool : Default True : Print results?
+    tempFilePath : string : Default TEMP_FILE_PATH : Where should this temp skinning
+        be exported?  Downstream code will auto-create this dir if it doesn't exist.
+    kwargs : Any additional keyword:args that should be passed to exportSkin,
+        based on it's parameters/arguments, asside from what is above.  Note, the
+        'filePaths' arg wil be auto-popped since we're overriding it here.
     """
     if not items:
         if not utils.getMeshVertIds():
@@ -3054,13 +3067,16 @@ def exportTempSkin(items=None, verbose=True):
 
     if os.path.isfile(TEMP_FILE_PATH):
         os.remove(TEMP_FILE_PATH)
-    exportSkin(items=items, filePath=TEMP_FILE_PATH, verbose=verbose)
+    if "filePaths" in kwargs:
+        kwargs.pop("filePaths")
+    exportSkin(items=items, filePath=tempFilePath, verbose=verbose, **kwargs)
 
-def importTempSkin(items=None, verbose=True):
+def importTempSkin(items=None, verbose=True, tempFilePath=TEMP_FILE_PATH, **kwargs):
     r"""
     Import SkinChunks from the temp file and apply their skinning.  Presumed
     exportTempWeights was ran first. Can be read back into this Maya instance,
-    or any other open Maya instance.
+    or any other open Maya instance.  Will use the default args to importSkin
+    unless overridden by kwargs.
 
     Parameters:
     items : None/list : Default None : If None, use the active selection (mesh,
@@ -3070,17 +3086,74 @@ def importTempSkin(items=None, verbose=True):
         in a single root group/transform, and it will act on all child mesh.  Pass
         in a single vert, and that's all it'll work on.  Mix and match!
     verbose : bool : Default True : Print results?
+    tempFilePath : string : Default TEMP_FILE_PATH : Where should this skinning
+        be imported from?
+    kwargs : Any additional keyword:args that should be passed to setWeights,
+        based on it's parameters/arguments, asside from what is above.  Note, the
+        'filePaths' arg wil be auto-popped since we're overriding it here.
     """
     if not items:
         if not utils.getMeshVertIds():
             om2.MGlobal.displayError("skinner : No mesh provided, can't import temp weights.")
             return
 
-    filePath = '%s/%s'%(TEMP_DIR, TEMP_FILE)
-    if not os.path.isfile(filePath):
-        om2.MGlobal.displayError("skinner : No 'temp' weight file to import from, expected to find here: '%s'"%(filePath))
+    if not os.path.isfile(tempFilePath):
+        om2.MGlobal.displayError("skinner : No 'temp' weight file to import from, expected to find here: '%s'"%(tempFilePath))
         return
-    importSkin(items=items, filePaths=filePath, verbose=verbose, printOverview=verbose)
+    if "filePaths" in kwargs:
+        kwargs.pop("filePaths")
+    importSkin(items=items, filePaths=tempFilePath, verbose=verbose, printOverview=verbose, **kwargs)
+
+def regenrateSkinCluster(items=[], verbose=True):
+    """
+    This is provided to work around a bug that can happen when trying to import
+    skinning on to mesh/skinCluster data that wasn't made by this tool.  Inside
+    of the setWeights function, an exception can be raised:
+    '(kInvalidParameter): Object is incompatible with this method'
+    An easy workaround is to regenerate that skinCluster using this tool.  So this
+    function simply wrappers those steps:
+    * For the provided mesh (not verts, since it needs to unbind the mesh / delete
+        the existing skinCluster in the process):
+    * Export temp skinning.
+    * Reimport temp skinning.
+
+    Parameters:
+    items : list : default empty list : If not provided, the current selection is
+        used.  Only supports mesh shapes, and transforms with mesh shapes.
+    verbose : bool : Default True : Print verbose results.
+    """
+    mesh = []
+    if not items:
+        items = mc.ls(selection=True, long=True, flatten=True)
+        if not items:
+            om2.MGlobal.displayError("Please select one or more mesh.")
+            return
+
+    for item in items:
+        if '.' in item:
+            om2.MGlobal.displayError("Please select only mesh, not components.")
+            return
+        if not mc.objectType(item) in ("transform", "mesh"):
+            om2.MGlobal.displayError(f"Please select only mesh, '{item}' is '{mc.objectType(item)}'")
+            return
+        mesh.append(utils.getMeshShape(item))
+
+    if verbose:
+        om2.MGlobal.displayInfo("")
+        om2.MGlobal.displayInfo(f"Begin SkinCluster data regenration on {len(mesh)} mesh:")
+
+        om2.MGlobal.displayInfo("")
+
+    tempFilePath = os.path.join(TEMP_DIR, TEMP_FILE_REGEN)
+    exportTempSkin(items=mesh, verbose=verbose, tempFilePath=tempFilePath)
+
+    importTempSkin(items=mesh, verbose=verbose, tempFilePath=tempFilePath,
+                   unskinFirst=True, importUsingPreDeformedPoints=False, setToBindPose=True)
+
+    if verbose:
+        om2.MGlobal.displayInfo("")
+        om2.MGlobal.displayInfo(f"SkinCluster data regenerated on the provided {len(mesh)} mesh.  See details above ^")
+
 
 #---------------------------------------------------------------------------
 

@@ -24,6 +24,8 @@ Updates:
         verts.  Specifically, updating addInfluences to not change any weights
         when influences are added.  Adding transposeWeights, to reorder SkinChunk
         influence weights based on skinCluster influence order.
+    2024-06-10 : v1.2.0 : Updating setBindPose : "it stopped working", and now
+        needs a 'g' (global) arg set True.
 """
 from __future__ import annotations # for type hinting
 import re
@@ -530,10 +532,10 @@ def setBindPose(skinCluster:str) -> (bool,None):
         om2.MGlobal.displayError("skinner.setBindPose : The provided skinCluster '%s' has no connected dagPose node, unable to set to the bind pose."%skinCluster)
         return None
 
-    notAtPose = mc.dagPose(dagPose[0], atPose=True, query=True)
+    notAtPose = mc.dagPose(dagPose[0], atPose=True, query=True, g=True)
     if notAtPose:
         try:
-            mc.dagPose(dagPose[0], restore=True)
+            mc.dagPose(dagPose[0], restore=True, g=True)
         except RuntimeError as e:
             print(e)
             om2.MGlobal.displayError("skinner.bindpose : Tried to set the skinCluster '%s' to it's bind pose, as defined by '%s', but failed, see above."%(skinCluster,dagPose[0]))
@@ -784,6 +786,9 @@ def getMeshVertIds(items=None) -> dict:
             else:
                 if mc.objectType(item) == "joint":
                     outSkinClusters = mc.listConnections(item, source=False, destination=True, type='skinCluster')
+                    # Note, a joint can be connected to a dagPose node, but not
+                    # a skinCluster.   We only care about the ones connected to
+                    # skinClusters:
                     if outSkinClusters:
                         outSkinClusters = list(set(outSkinClusters))
                         for skinCluster in outSkinClusters:

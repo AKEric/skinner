@@ -1,5 +1,5 @@
 """
-skinner
+Skinner
 
 Skin export/import tools for Autodesk Maya by Eric Pavey.
 
@@ -64,9 +64,19 @@ Changelog:
             skinCluster. Also raising more expections if 'selectVertsOnly' is set
             and operations would happen that would change the skinning.  Various
             verbose logging formatting changes.
+    2024-06-10 : v1.2.0 : window.py: Rearranging some of the Import tab  UI elements.
+        Bugfixing App.importSkin : It wasn't closing the undoChunk.  Adding the
+        'Auto-Fix Broken skinCluster' to the 'Extras' tab.  Updating tooltips, making
+        multi-line.
+        core.py : Setting setWeights unskinFirst default to False, was True. Updating
+        the undoChunk closing code with specific names.  Adding regenrateSkinCluster,
+        adding new tempFilePath arg, and kwargs capturing to both exportTempSkin
+        and importTempSkin.
+        utils.py : Updating setBindPose : "it stopped working", and now needs a
+        'g' (global) arg set True.
 """
 __author__ = "Eric Pavey"
-__version__ = "1.1.11"
+__version__ = "1.2.0"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"
