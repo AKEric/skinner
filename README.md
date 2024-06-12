@@ -428,11 +428,11 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 * **Print sknr file info…**
   *  The ```.sknr``` file format is binary : It’s pickled Python data.  Because of that, it’s not human readable.  This section can be used to browse to, and print information in a ```.sknr``` file to the Script Editor, based on the checkboxes set, and the min/max print indices (to help limit how much info is printed for large files).
 * **Auto-Fix Broken skinCluster** (added v1.2.0)
-  * There's a really weird bug that sometimes when you import skinning, the tool fails, with this error:
+  * There's a really weird bug that sometimes when you import skinning onto a mesh with an existing ```skinCluster```, the tool fails, with this error:
     * ```'(kInvalidParameter): Object is incompatible with this method'```
-  * I've found that sometimes (but not always), trying to load skinning onto a skinCluster that wasn't made by this tool, will trigger that error.
+  * I've found that sometimes (but not always), trying to load skinning onto a ```skinCluster``` that wasn't made by this tool, will trigger that error.
   * It appears to be something 'bad' in the skinCluster itself preventing the new weights from being set.  Much debugging/diffing of mayaAscii files hasn't turned up anything.
-  * The fix is simple:  Export temp skinning on the mesh, unbind it, and reimport the skinning, to get a 'new' (and much happier) skinCluster built, so that future sknr imports work better.
+  * The fix is simple (what this tool does):  Export temp skinning on the mesh, unbind it, and reimport the skinning, to get a 'new' (and much happier) skinCluster built, so that future sknr imports work better.
 # Skinner Concepts
   
 ## The .sknr file format
