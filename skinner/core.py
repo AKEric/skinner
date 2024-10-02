@@ -101,6 +101,8 @@ Updates:
         was True. Adding regenrateSkinCluster.  Adding new tempFilePath arg, and
         kwargs capturing to both exportTempSkin and importTempSkin.  Updating
         the undoChunk closing code with specific names.
+    2024-10-02 : v1.2.1 : Bufixing importSkinChunks if multiple were imported at
+        once : could have been duplicating them up / confusing itself.
 
 Examples:
 
@@ -1799,6 +1801,7 @@ def importSkinChunks(filePaths:list, verbose=True) -> list:
         if not os.path.isfile(fPath):
             raise IOError("The provided file is missing from disk: %s"%fPath)
     try:
+        chunkCreationTimes = []
         for fPath in filePaths:
             with open(fPath, 'rb') as f:
                 theseChunks = pickle.load(f)
@@ -1815,8 +1818,8 @@ def importSkinChunks(filePaths:list, verbose=True) -> list:
             # Maybe, only merge if they have the same number of influences?  Or,
             # allow for multiple influences filling in zero vaules, but always bias
             # to the most recent weighting.
-            chunkCreationTimes = []
-            for skinChunk in skinChunks:
+
+            for skinChunk in theseChunks:
                 thisMeshShape = skinChunk.getMeshShapeName()
                 creationTime = skinChunk.getCreationTime()
                 importFile = skinChunk.getFilePath()

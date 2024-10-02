@@ -74,9 +74,11 @@ Changelog:
         and importTempSkin.
         utils.py : Updating setBindPose : "it stopped working", and now needs a
         'g' (global) arg set True.
+    2024-10-02 : v1.2.1 : Bufixing core.importSkinChunks if multiple were imported
+        at once : could have been duplicating them up / confusing itself.
 """
 __author__ = "Eric Pavey"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"
