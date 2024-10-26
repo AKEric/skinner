@@ -88,7 +88,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Supports Maya’s linear, dual-quat, and weight-blended 'Skinning Methods':  What state its in during export will be the state applied during import.
 * Not so much a feature, but an FYI:  Skinner only suppots skinCluster node's who's 'Normalize Weights' value is set to 'Interactive' (1): It does not support 'None' (0), or 'Post' (2).  If Skinner encounters such a non-conforming skinCluster, it'll prompt the user to 'auto-convert' it to 'interactive' before the operation is done (v1.0.14).  If the user cancels, no work is done.  Basically: ```skinCluster.normalizeWeights = 1```.
 * Not UV dependent (other skin tools on the market operate on UVs).
-* Full featuerd backend API (fully docstringed with with Py3 type hint notation) ready to be plugged into your pipeline code.
+* Full featured backend API (fully docstringed with Py3 type hint notation) ready to be plugged into your pipeline code.
 * Verbose and robust results printed to the Script Editor / returned by the API for your own pipeline’s consumption.
 * Full integration into your teams version control software.
 * Introspection/printing of data in the custom ```.sknr``` file format (binary pickled Python data).
@@ -113,7 +113,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
  
 ## Why this tool
 
-Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions and rebuildable static mesh -> skeletal/deformed mesh pipeilnes, one of the biggest areas that is missing in that rebuildable-asset pipeline-subset is a solid/repeatable skin weight export/import process in Maya, that supports radical chagnes to the source mesh during skin reapplication.
+Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions and rebuildable static mesh -> skeletal/deformed mesh pipeilnes, one of the biggest areas that is missing in that rebuildable-asset pipeline-subset is a solid/repeatable skin weight export/import process in Maya, that supports radical changes to the source mesh during skin reapplication.
 
 The tools that Maya provides lack features (+ can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
 
@@ -420,6 +420,7 @@ That way each individual user won’t have to enter the values… and get them w
 skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
 * **Verbose Logging** : If this is checked, print information to the Script Editor. If unchecked, mostly only Errors and Warnings will show up.
+* **Reset Preferences** : Will clear out any user-defined values in the tool, setting it back to 'factory defaults'.
 * **‘Auto-Fill’ Subdir :**
   *  If this is populated, this is a subdir(s, could as deep as needed) that will be appended to the '<- Auto-Fill' buttons in the Export & Import tabs.  
   *  This is handy if in your production, you always save skin weights in a subdir relative to the current scene:  This field makes it easy to update the ‘Auto-Fill’ button with that subdir.  
