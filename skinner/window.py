@@ -39,6 +39,8 @@ Updates:
     2024-06-10 : v1.2.0 : Rearranging some of the App import UI elements.  Bugfixing
         App.importSkin : It wasn't closing the undoChunk.  Adding the 'Auto-Fix Broken
         skinCluster' to the 'Extras' tab.  Updating tooltips, making multi-line.
+    2024-10-26 : v1.3.0 : Updating to support PySide6, adding 'Reset Preferences'
+        button to the 'Extras' tab.
 
 Examples:
 
@@ -54,10 +56,13 @@ import maya.api.OpenMaya as om2
 
 from maya.app.general.mayaMixin import MayaQWidgetBaseMixin
 
-from PySide2 import QtWidgets, QtCore, QtGui
+try:
+    from PySide6 import QtWidgets, QtCore, QtGui
+except:
+    from PySide2 import QtWidgets, QtCore, QtGui
 
-from . import core, utils
-
+from . import utils
+from . import core
 from . import __version__, __documentation__, __source__
 
 #-----------------------
@@ -168,6 +173,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         iconPath = utils.getIconPath()
         if iconPath:
             self.setWindowIcon(QtGui.QIcon(iconPath))
+        utils.confirmDependencies()
 
         self.nnOptions = []
         self.weightPaths = []
@@ -382,7 +388,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                         self.widget_unbindFirst = QtWidgets.QCheckBox("Unbind First?")
                         layout_moreOptions.addWidget(self.widget_unbindFirst)
                         self.widget_unbindFirst.setToolTip("If any mesh is currently skinned, unbind it before import?\nThis will set the mesh back to the bindpose before the import.\nOtherwise the old/new skinning is merged together.")
-                        if self.settings.value(SETTING_UNBIND_FIRST, True):
+                        if self.settings.value(SETTING_UNBIND_FIRST, False):
                             self.widget_unbindFirst.setChecked(True)
                         self.widget_unbindFirst.clicked.connect(self.cbUnbindFirst)
                     layout_import.addWidget(makeSeparator())
@@ -619,12 +625,21 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
                             layout_docs.addWidget(widget_docs)
                             widget_docs.clicked.connect(self.cbShowDocs)
 
-                        self.widget_verboseLogging = QtWidgets.QCheckBox("Verbose Logging?")
-                        layout_extrasGrid.addWidget(self.widget_verboseLogging, 1,0)
-                        self.widget_verboseLogging.setToolTip("Print verbose results of the import/export operations to the Maya Script Editor?\nIf this is unchecked, nothing (unless errors) will be printed to the Script Editor.")
-                        if self.settings.value(SETTING_VERBOSE_LOG, True):
-                            self.widget_verboseLogging.setChecked(True)
-                        self.widget_verboseLogging.clicked.connect(self.cbVerboseLog)
+                        layout_loggingResetPrefs = QtWidgets.QHBoxLayout()
+                        layout_extrasGrid.addLayout(layout_loggingResetPrefs, 1,0)
+                        if layout_loggingResetPrefs:
+
+                            self.widget_verboseLogging = QtWidgets.QCheckBox("Verbose Logging?")
+                            layout_loggingResetPrefs.addWidget(self.widget_verboseLogging)
+                            self.widget_verboseLogging.setToolTip("Print verbose results of the import/export operations to the Maya Script Editor?\nIf this is unchecked, nothing (unless errors) will be printed to the Script Editor.")
+                            if self.settings.value(SETTING_VERBOSE_LOG, True):
+                                self.widget_verboseLogging.setChecked(True)
+                            self.widget_verboseLogging.clicked.connect(self.cbVerboseLog)
+
+                            widget_resetBut = QtWidgets.QPushButton("Reset Preferences")
+                            widget_resetBut.setToolTip("Reset all user changed values back to defaults.")
+                            layout_loggingResetPrefs.addWidget(widget_resetBut)
+                            widget_resetBut.clicked.connect(self.cbResetSettings)
 
                         layout_autoFill = QtWidgets.QHBoxLayout()
                         layout_extrasGrid.addLayout(layout_autoFill, 1,1)
@@ -881,7 +896,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         Callback executed to save the state of the 'Build Missing Influences?'
         checkbox.
         """
-        if self.widget_buildMissingInfs.checkState():
+        if self.widget_buildMissingInfs.isChecked():
             self.settings.setValue(SETTING_BUILD_MISSING_INFS, 1)
         else:
             self.settings.setValue(SETTING_BUILD_MISSING_INFS, 0)
@@ -891,7 +906,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         Callback executed to save the state of the 'Force Import From UberChunk?'
         checkbox.
         """
-        if self.widget_forceUberChunk.checkState():
+        if self.widget_forceUberChunk.isChecked():
             self.settings.setValue(SETTING_FORCE_UBERCHUNK, 1)
         else:
             self.settings.setValue(SETTING_FORCE_UBERCHUNK, 0)
@@ -902,7 +917,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         """
         Callback executed to save the state of the 'Select instead of skin' checkbox.
         """
-        if self.widget_selectInstead.checkState():
+        if self.widget_selectInstead.isChecked():
             self.settings.setValue(SETTING_SELECT_INSTEAD, 1)
         else:
             self.settings.setValue(SETTING_SELECT_INSTEAD, 0)
@@ -911,7 +926,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         """
         Callback executed to save the state of the 'Verbose Logging?'checkbox.
         """
-        if self.widget_verboseLogging.checkState():
+        if self.widget_verboseLogging.isChecked():
             self.settings.setValue(SETTING_VERBOSE_LOG, 1)
         else:
             self.settings.setValue(SETTING_VERBOSE_LOG, 0)
@@ -1036,7 +1051,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         Callback executed to save the state of the 'Set To Bindpose?' checkbox in the
         export tab.
         """
-        if self.widget_exportSetBindpose.checkState():
+        if self.widget_exportSetBindpose.isChecked():
             self.settings.setValue(SETTING_EXPORT_SET_TO_BINDPOSE, 1)
         else:
             self.settings.setValue(SETTING_EXPORT_SET_TO_BINDPOSE, 0)
@@ -1048,7 +1063,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         Positions?' checkbox in the import tab.  It also unchecks 'Set To Bindpose'
         and 'Unbind First'.
         """
-        if self.widget_usePreDeformedShape.checkState():
+        if self.widget_usePreDeformedShape.isChecked():
             self.settings.setValue(SETTINGS_IMPORT_USE_PRE_DEFORMED_SHAPE, 1)
 
             self.widget_importSetBindpose.setChecked(False)
@@ -1063,7 +1078,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         Callback executed to save the state of the 'Set To Bindpose?' checkbox in the
         import tab.  This also unchecks 'Import Using Pre-Deformed Shape Positions?'.
         """
-        if self.widget_importSetBindpose.checkState():
+        if self.widget_importSetBindpose.isChecked():
             self.settings.setValue(SETTING_IMPORT_SET_TO_BINDPOSE, 1)
 
             self.widget_usePreDeformedShape.setChecked(False)
@@ -1077,7 +1092,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         It also unchecks 'Import Using Pre-Deformed Shape Positions?' and enables
         'Set To Bindpose'.
         """
-        if self.widget_unbindFirst.checkState():
+        if self.widget_unbindFirst.isChecked():
             self.settings.setValue(SETTING_UNBIND_FIRST, 1)
 
             self.widget_importSetBindpose.setChecked(True)
@@ -1088,6 +1103,12 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         else:
             self.settings.setValue(SETTING_UNBIND_FIRST, 0)
 
+    def cbResetSettings(self):
+        """
+        Reset any user=based settings.
+        """
+        self.settings.clear()
+        App()
 
     #------------------
     # Actions
@@ -1105,7 +1126,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         printArgs = {}
         for checkbox in self.widgets_printerCheckBoxes:
             text = checkbox.text()
-            checked = int(checkbox.checkState())
+            checked = int(checkbox.isChecked())
             if checked:
                 printArgs[text] = True
             else:
@@ -1165,13 +1186,13 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
             fallbackSkinningMethod = "closestNeighbors"
         elif uiFallbackSkinMethod == "Closest Point":
             fallbackSkinningMethod = "closestPoint"
-        buildMissingInfs = True if int(self.widget_buildMissingInfs.checkState()) else False
+        buildMissingInfs = True if int(self.widget_buildMissingInfs.isChecked()) else False
         setToBindpose = self.widget_importSetBindpose.isChecked()
-        forceUberChunk = True if int(self.widget_forceUberChunk.checkState()) else False
-        importUsingPreDeformedPoints = True if int(self.widget_usePreDeformedShape.checkState()) else False
-        unbindFirst = True if int(self.widget_unbindFirst.checkState()) else False
-        selInsteadOfSkin = True if int(self.widget_selectInstead.checkState()) else False
-        verbose = True if int(self.widget_verboseLogging.checkState()) else False  #!!! NEED TO FIX
+        forceUberChunk = True if int(self.widget_forceUberChunk.isChecked()) else False
+        importUsingPreDeformedPoints = True if int(self.widget_usePreDeformedShape.isChecked()) else False
+        unbindFirst = True if int(self.widget_unbindFirst.isChecked()) else False
+        selInsteadOfSkin = True if int(self.widget_selectInstead.isChecked()) else False
+        verbose = True if int(self.widget_verboseLogging.isChecked()) else False  #!!! NEED TO FIX
         printOverview = False
         printOverviewMode = "byImportType"
         checkedButWidget = self.widget_importOvererviewGroup.checkedButton()
@@ -1270,7 +1291,7 @@ class App(MayaQWidgetBaseMixin, QtWidgets.QWidget):
         elif mode == "temp":
             path = core.TEMP_FILE_PATH
 
-        verbose = True if int(self.widget_verboseLogging.checkState()) else False
+        verbose = True if int(self.widget_verboseLogging.isChecked()) else False
 
         setToBindPose = self.widget_exportSetBindpose.isChecked()
 

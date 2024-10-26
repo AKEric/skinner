@@ -76,9 +76,12 @@ Changelog:
         'g' (global) arg set True.
     2024-10-02 : v1.2.1 : Bufixing core.importSkinChunks if multiple were imported
         at once : could have been duplicating them up / confusing itself.
+    2024-10-26 : v1.3.0 : Updating window.py to support PySide6, adding 'Reset Preferences'
+        button to the 'Extras' tab.
+
 """
 __author__ = "Eric Pavey"
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"

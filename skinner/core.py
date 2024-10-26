@@ -151,16 +151,22 @@ import maya.cmds as mc
 import maya.api.OpenMaya as om2
 
 # See notes above for install
+from skinner import __documentation__
 try:
     import numpy as np
 except ImportError:
+    #om2.MGlobal.displayError(f"skinner.core : NumPy isn't installed, skinner won't function, see the docs: {__documentation__}")
     np = None
 try:
     from scipy.spatial import KDTree
 except ImportError:
+    #om2.MGlobal.displayError(f"skinner.core : SciPy isn't installed, skinner won't function, see the docs: {__documentation__}")
     KDTree = None
 
 from . import utils
+if not np or not KDTree or not str(sys.version).startswith("3"):
+    utils.confirmDependencies()
+
 from . import __version__
 
 #---------------------------
@@ -3248,5 +3254,3 @@ def test() -> bool:
 
 #------------
 
-if not np or not KDTree or not str(sys.version).startswith("3"):
-    utils.confirmDependencies()

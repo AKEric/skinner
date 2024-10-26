@@ -142,47 +142,52 @@ def confirmDependencies():
     """
     missingInfo = r"""----------------------------------------------------------------------------
 Skinner tool requires numpy & scipy to run in Python 3.  To install them for
-your version of Maya, you can follow these steps, using Python 3.7 and
-Maya 2022+ as an example:
+your version of Maya, you can follow this Windows example, using Python 3.7 and
+Maya 2022+.
 
-Open cmd shell **as admin**.
-Then line by line (using Windows as an example):
+* Close Maya if it is open.
+* Open a Windows Command Prompt **as administrator**.
+* Install the scipy & numpy packages, one at a time, but if you install scipy
+    first, it should bring the numpy depdendencies along for the ride:
 
-Install the numpy & scipy packages, one at a time:
-> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
+> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
 
-You can optionally provide a '--target C:\some\path\to\target\dur' at the end of
-the above lines if you want to install them to a custom location that Maya sees.
+* You can optionally provide a '--target C:\some\path\to\target\dur' at the end of
+    the above lines if you want to install them to a custom location that Maya sees.
+* In either case, if presuming one of them worked, you should see (using numpy
+    as an example):
 
-In either case, if presuming one of them worked, you should see (using numpy
-as an example):
 > Downloading numpy-1.19.5-cp37-cp37m-win_amd64.whl (13.2 MB)
 > Successfully installed numpy-1.19.5
 
-They should install here by default, unless overridden by the --target arg:
-C:\Program Files\Autodesk\Maya2022\Python37\Lib\site-packages
+* They should install here by default, unless overridden by the --target arg:
+* C:\Program Files\Autodesk\Maya2022\Python37\Lib\site-packages
 
-Then in Maya's Script Editor, confirm the install:
+* Restart Maya.
+* In Maya's Script Editor, confirm the install:
+
 import numpy as np
 import scipy as sp
 print(np.__file__)
 print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\numpy\__init__.py
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
-----------------------------------------------------------------------------"""
-    missingModule = False
-    if not np:
-        om2.MGlobal.displayError("Missing numpy install.")
-        missingModule = True
-    if not KDTree:
-        om2.MGlobal.displayError("Missing scipy install.")
-        missingModule = True
-    if not str(sys.version).startswith("3"):
-        om2.MGlobal.displayError("Not running in Python 3+, current version is: %s"%sys.version)
-        missingModule = True
 
-    if missingModule:
+----------------------------------------------------------------------------"""
+    errors = []
+    if not np:
+        errors.append("Missing numpy install")
+    if not KDTree:
+        errors.append("Missing scipy install")
+    if not str(sys.version).startswith("3"):
+        errors.append(f"Not running in Python 3+, current version is: {sys.version}")
+
+    if errors:
+        print("----------------------------------------------------------------------------")
+        print("Skinner is missing required depedencies:")
+        for err in errors:
+            print(f"    {err}")
         print(missingInfo)
 
 def loadPlugin():
