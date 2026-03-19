@@ -103,6 +103,9 @@ Updates:
         the undoChunk closing code with specific names.
     2024-10-02 : v1.2.1 : Bufixing importSkinChunks if multiple were imported at
         once : could have been duplicating them up / confusing itself.
+    2026-03-19 : v1.3.1 : Updating importSkinChunks to provide better execption
+        reporting to users when trying to import a .sknr file saved with a different
+        version of numpy than what is current.
 
 Examples:
 
@@ -1810,7 +1813,16 @@ def importSkinChunks(filePaths:list, verbose=True) -> list:
         chunkCreationTimes = []
         for fPath in filePaths:
             with open(fPath, 'rb') as f:
-                theseChunks = pickle.load(f)
+                try:
+                    theseChunks = pickle.load(f)
+                except ModuleNotFoundError as e:
+                    if "numpy" in str(e):
+                        raise ModuleNotFoundError((f"'{e}'\n"+\
+                                                   f"The .sknr file being loaded was saved with a different 'major' version of numpy than currently in use ({np.__version__}) :\n"+\
+                                                   f"'{fPath}'\n"+\
+                                                   "To update the .sknr file to the active numpy version : 1) Select the skinned mesh and 'Export Temp' 2) Check the 'Unbind First' import option 3) 'Import Temp' 4) Re-export the skinning."))
+                    else:
+                        raise
                 skinChunks.extend(theseChunks)
                 if verbose:
                     print("\tImported %s SkinChunks from: %s"%(len(theseChunks), fPath))

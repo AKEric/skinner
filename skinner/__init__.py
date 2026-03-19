@@ -78,10 +78,13 @@ Changelog:
         at once : could have been duplicating them up / confusing itself.
     2024-10-26 : v1.3.0 : Updating window.py to support PySide6, adding 'Reset Preferences'
         button to the 'Extras' tab.
+    2026-03-19 : v1.3.1 : Updating importSkinChunks to provide better execption
+        reporting to users when trying to import a .sknr file saved with a different
+        version of numpy than what is current.
 
 """
 __author__ = "Eric Pavey"
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"
