@@ -162,6 +162,7 @@ The "Integrate into your piepline" sections explains how to figure out where you
   * This will not work on older versions of Maya running Python 2.7
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
+    * Imporant note:  The .sknr files are tied to the major version of numpy used:  Broadly, 1.x is still primarily used by Maya (at least up to Maya 2025).  But if numpy 2.x was used to save .sknr files, they'd be incompatible with a Maya running numpy 1.x.
   * [Scipy](https://scipy.org/)
   * By default they will be missing, so presume they need installed.
 
