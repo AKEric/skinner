@@ -150,7 +150,7 @@ I welcome all suggestions & ideas for improvement.  As mentioned above I maintai
 
 To install the tool, fulfill the 'Requirements', and then 'Integrate into your pipeline', covered in the below sections.
 
-The "Requirements" step makes sure you have both numpy and scipy installed in a place where Maya Python can see them:  The Skinner tool leverages these external packages, so it's up to the user to install them.  The section also explains how to test they've been installed correctly in Maya before continuing.
+The "Requirements" step makes sure you have both numpy and scipy installed in a place where Maya Python can see them:  The Skinner tool leverages these external packages, so it's up to the user to install them.  The section also explains how to test they've been installed correctly in Maya before continuing.  Note: As of at least Maya 2025, Maya comes with it's own internal version of numpy, but scipy still needs installed.
 
 The "Integrate into your piepline" sections explains how to figure out where you should extract _this_ code, from the zip.  Since this tool could be used by anyone from a hobbiest to a AAA studio, it's up to the user to understand where to extract the tools, but that section fully explains how to do this, if you're unfamilar with the process.
 
@@ -163,6 +163,9 @@ The "Integrate into your piepline" sections explains how to figure out where you
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
     * Imporant note:  The .sknr files are tied to the major version of numpy used:  Broadly, 1.x is still primarily used by Maya (at least up to Maya 2025).  But if numpy 2.x was used to save .sknr files, they'd be incompatible with a Maya running numpy 1.x.
+    * As of Maya 2025, Maya ships with it's own version of numpy, and won't need installed, per the below instructions.
+    * If, in the Maya Script Editor (Python tab) you can run this code without error, you can skip this install step below:
+       * import numpy as np
   * [Scipy](https://scipy.org/)
   * By default they will be missing, so presume they need installed.
 
@@ -183,6 +186,7 @@ C:\Program Files\Autodesk\Maya2022\bin\maya.exe
   * Install the ```scipy``` & ```numpy``` packages, one at a time, via ```pip``` using the below example.
   * Note, it’s important to call to ```mayapy.exe``` _specifically_ to execute _its _version of ```pip```.
   * Also, technically you only need to install ```scipy```, since it should auto-pull in the ```numpy``` dependencies it requires.
+     *  Reminder per above:  As of Maya 2025, Maya ships with its own cut of numpy, so you can skip that install step below if you're on that version or newer.
   * Use the path to _your_ version of ```mayapy.exe``` below:
 ```
 > C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
