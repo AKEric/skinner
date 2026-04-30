@@ -38,7 +38,7 @@ At high level, the Skinner tool works by exporting & importing ```SkinChunk``` d
 
 ## Donate For Usage
 
-As of Feb 2023, Skinner has been open sourced.  But the developer would still appreicate any donations you'd like to provide!  
+As of Feb 2023, Skinner has been open sourced.  But the developer would still appreciate any donations you'd like to provide!  
 
 Two options:
 * https://paypal.me/akpavey
@@ -50,7 +50,7 @@ Suggested donation rate:
 
 ## Disclaimers
 
-By using/installing Skinner you're accepting all repsonsibilities for its usage, and release me from all liability: See the [License](https://github.com/AKEric/skinner/blob/main/LICENSE.md).
+By using/installing Skinner you're accepting all responsibilities for its usage, and release me from all liability: See the [License](https://github.com/AKEric/skinner/blob/main/LICENSE.md).
 
 I have a full time job, this is a side project:  I will attempt to address all issues outside of work hours to the best of my abilities.
 
@@ -86,7 +86,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Supports duplicate mesh names in the Maya scene during import (the tool converts everything to long/absolute paths for import purposes).  
 * Supports duplicate mesh names in the Maya scene during export, but a ```.sknr``` file can't store data for mesh with duplicate names (but you could store different ```.sknr``` files for each).
 * Supports Maya’s linear, dual-quat, and weight-blended 'Skinning Methods':  What state its in during export will be the state applied during import.
-* Not so much a feature, but an FYI:  Skinner only suppots skinCluster node's who's 'Normalize Weights' value is set to 'Interactive' (1): It does not support 'None' (0), or 'Post' (2).  If Skinner encounters such a non-conforming skinCluster, it'll prompt the user to 'auto-convert' it to 'interactive' before the operation is done (v1.0.14).  If the user cancels, no work is done.  Basically: ```skinCluster.normalizeWeights = 1```.
+* Not so much a feature, but an FYI:  Skinner only supports skinCluster node's who's 'Normalize Weights' value is set to 'Interactive' (1): It does not support 'None' (0), or 'Post' (2).  If Skinner encounters such a non-conforming skinCluster, it'll prompt the user to 'auto-convert' it to 'interactive' before the operation is done (v1.0.14).  If the user cancels, no work is done.  Basically: ```skinCluster.normalizeWeights = 1```.
 * Not UV dependent (other skin tools on the market operate on UVs).
 * Full featured backend API (fully docstringed with Py3 type hint notation) ready to be plugged into your pipeline code.
 * Verbose and robust results printed to the Script Editor / returned by the API for your own pipeline’s consumption.
@@ -100,7 +100,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
 * Integrate into a rebuildable asset pipeline:
   * After skinning is performed on your 'SkeletalMesh'/'DeformedMesh' scene, export that Skinner data to disk.
   * Update mesh poly counts, names, etc in your ‘StaticMesh’ scene.
-  * Via your pipeline code, When you regenerate your SkekeletalMesh from the StaticMesh, the Skinner tool handles all the mesh name changes, etc, loading weights onto matching mesh names where it can, and interpolating weights for new mesh / renamed mesh.
+  * Via your pipeline code, when you regenerate your SkeletalMesh from the StaticMesh, the Skinner tool handles all the mesh name changes, etc, loading weights onto matching mesh names where it can, and interpolating weights for new mesh / renamed mesh.
 * You have good arm skinning in sceneA, and want to copy it to only a section of an arm in sceneB:
   * In sceneA, select just the verts you want to copy the skinning data on (could be on multiple mesh), and ‘export temp’.
   * In sceneB, select just the verts you want to copy the skinning data on (could be multiple mesh), and ‘import temp’.
@@ -113,7 +113,7 @@ I have a full time job, this is a side project:  I will attempt to address all i
  
 ## Why this tool
 
-Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions and rebuildable static mesh -> skeletal/deformed mesh pipeilnes, one of the biggest areas that is missing in that rebuildable-asset pipeline-subset is a solid/repeatable skin weight export/import process in Maya, that supports radical changes to the source mesh during skin reapplication.
+Having built holistic art -> engine pipelines for multiple studios (Visceral/EA, Sledgehammer Games/Activision, 31st Union/2K), part of which include fully procedural rigging solutions and rebuildable static mesh -> skeletal/deformed mesh pipelines, one of the biggest areas that is missing in that rebuildable-asset pipeline-subset is a solid/repeatable skin weight export/import process in Maya, that supports radical changes to the source mesh during skin reapplication.
 
 The tools that Maya provides lack features (+ can be slow), and there isn't anything I could find (free or $paid$) that had the feature-set I wanted/needed.  
 
@@ -128,7 +128,7 @@ If you are the author of any of the below tools and feel I have misrepresented y
   * [Weight Maps Export](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-7681F977-32D2-4FE4-A83D-E1C9FB2B402F-htm.html), [Weight Map Import](https://knowledge.autodesk.com/support/maya/learn-explore/caas/CloudHelp/cloudhelp/2022/ENU/Maya-CharacterAnimation/files/GUID-DD0E4715-294F-43EF-A70B-1EAD8389CA0E-htm.html)
     * This export skin weights as 2d images, but is entirely predicated on good/non-overlapping UV’s.  Skinner has substantially better import options available, and has no UV dependencies.
 * [ngSkinTools](https://www.ngskintools.com/)
-  * Provides robust layers-based solution for painting skin weights.  v1 had a limited featureset for exporting/importing of those weights.  But the [v2 API](https://www.ngskintools.com/documentation/v2/api/transfer/) seems to have expanded on this signifiantly.  Reading the v2 API docs, Skinner still has substantially more overall features.
+  * Provides robust layers-based solution for painting skin weights.  v1 had a limited featureset for exporting/importing of those weights.  But the [v2 API](https://www.ngskintools.com/documentation/v2/api/transfer/) seems to have expanded on this significantly.  Reading the v2 API docs, Skinner still has substantially more overall features.
   * Skinner would be a good compliment to this system.
   * As of Maya 2025(?), ngSkinTools is now an officially included plugin with Maya.
 * [mGear](http://www.mgear-framework.com/)
@@ -153,9 +153,9 @@ To install the tool, fulfill the 'Requirements', and then 'Integrate into your p
 
 The "Requirements" step makes sure you have both numpy and scipy installed in a place where Maya Python can see them:  The Skinner tool leverages these external packages, so it's up to the user to install them.  The section also explains how to test they've been installed correctly in Maya before continuing.
 
-The "Integrate into your piepline" sections explains how to figure out where you should extract _this_ code, from the zip.  Since this tool could be used by anyone from a hobbiest to a AAA studio, it's up to the user to understand where to extract the tools, but that section fully explains how to do this, if you're unfamilar with the process.
+The "Integrate into your pipeline" sections explains how to figure out where you should extract _this_ code, from the zip.  Since this tool could be used by anyone from a hobbyist to a AAA studio, it's up to the user to understand where to extract the tools, but that section fully explains how to do this, if you're unfamiliar with the process.
 
-**If you're unfamilar with this level of tool integration**, that's ok:  If you follow the below sections line by line, step by step, there's no reason you wno't find success.
+**If you're unfamiliar with this level of tool integration**, that's ok:  If you follow the below sections line by line, step by step, there's no reason you won't find success.
 
 ## Requirements
 * It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
@@ -168,29 +168,31 @@ The "Integrate into your piepline" sections explains how to figure out where you
 
 Maya 2022+ makes it very easy to install new Python packages via pip.  Official Maya 2022 docs [HERE](https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-72A245EC-CDB4-46AB-BEE0-4BBBF9791627) that you should read & have an understanding of.
 
-Here is an example usage for Maya 2022 on Windows 10:
+Here is an example usage for Maya 2026 on Windows 10:
 
 * Find on your hard drive Where ```mayapy.exe``` lives for the version of Maya you're installing this for (could have multiple Maya versions on your PC).  The below example shows a standard install location:  Make a note of this path.
   * If you have trouble finding this location, you can query it in an open Maya session, via a Python tab in the Script Editor:  ```mayapy.exe``` lives in the same dir / next to the ```maya.exe``` shown below:
 ```python
 import sys
 print(sys.executable)
-C:\Program Files\Autodesk\Maya2022\bin\maya.exe
+C:\Program Files\Autodesk\Maya2026\bin\maya.exe
 ```
+* ```mayapy.exe``` (used below) lives in the same directory as ```maya.exe```.
 * Open a Command Prompt **as admin** (on Windows at least)
   * Start Menu -> Command Prompt -> RMB (Right Mouse Button) -> Run As Administrator
 * Then line by line:
   * Install the ```scipy``` & ```numpy``` packages, one at a time, via ```pip``` using the below example.
   * Note, it’s important to call to ```mayapy.exe``` _specifically_ to execute _its _version of ```pip```.
   * Also, technically you only need to install ```scipy```, since it should auto-pull in the ```numpy``` dependencies it requires.
+    * In addition, sometime around Maya 2024, Maya self-included numpy as part of the default packaging.
   * Use the path to _your_ version of ```mayapy.exe``` below:
 ```
-> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install scipy
+> C:\Program Files\Autodesk\Maya2026\bin\mayapy.exe -m pip install scipy
 ```
 ```
-> C:\Program Files\Autodesk\Maya2022\bin\mayapy.exe -m pip install numpy
+> C:\Program Files\Autodesk\Maya2026\bin\mayapy.exe -m pip install numpy
 ```
-* If yo'ure installing this for a studio (vs home use), you can optionally provide a ```–-target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
+* If you're installing this for a studio (vs home use), you can optionally provide a ```–-target C:\some\path\to\target\dir``` at the end of the above lines if you want to install them to a custom location that Maya sees.
 * In either case, if the above worked, you should see (using numpy as an example):
 ```
 > Downloading numpy-1.19.5-cp37-cp37m-win_amd64.whl (13.2 MB)
@@ -198,7 +200,7 @@ C:\Program Files\Autodesk\Maya2022\bin\maya.exe
 ```
 * They should install here by default, unless overridden by the ```–-target``` arg:
 ```
-C:\Program Files\Autodesk\Maya2022\Python37\Lib\site-packages
+C:\Program Files\Autodesk\Maya2026\Python\Lib\site-packages
 ```
 * After restarting Maya, in the Script Editor, confirm the install:
 ```python
@@ -206,8 +208,8 @@ import numpy as np
 import scipy as sp
 print(np.__file__)
 print(sp.__file__)
-# C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\numpy\__init__.py
-# C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
+# C:\Program Files\Autodesk\Maya2026\Python\Lib\site-packages\numpy\__init__.py
+# C:\Program Files\Autodesk\Maya2026\Python\Lib\site-packages\scipy\__init__.py
 ```
 ## Integrating Into Your Pipeline
 All code lives in a ```/skinner``` Python package. To preserve the import namespace, your final install must be importable as ```import skinner``` (meaning the folder on Maya's ```sys.path``` must be named ```skinner```).
@@ -227,8 +229,8 @@ for path in sorted(sys.path):
 ```
 * Common dirs (all valid for extract) that should show up may look like:
 ```
-C:/Users/your.name/Documents/maya/2022/prefs/scripts
-C:/Users/your.name/Documents/maya/2022/scripts
+C:/Users/your.name/Documents/maya/2026/prefs/scripts
+C:/Users/your.name/Documents/maya/2026/scripts
 C:/Users/your.name/Documents/maya/scripts
 ...
 ```
@@ -253,6 +255,7 @@ The App call can take multiple different args, to help integrate your studio’s
 
 ## Tool UI Overview
 The UI is split into three main tabs, discussed below.
+All interactive UI elements also support a right-mouse-button context menu with **Reset To Default**.
 
 ### Import Tab
 ![skinner_importTab](images/skinner_importTab.JPG)
@@ -275,7 +278,7 @@ UI Elements:
       * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
       * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
     * ‘…’ : Browse to a file(s, could be multiple) to import from.
-* **2 : Fallback Skinning Method** (FSM) :  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurance (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
+* **2 : Fallback Skinning Method** (FSM) :  A FSM is used when the 'vert count/vert order' of the source mesh being imported into is different than the target mesh / ```SkinChunk``` with stored values.  This is a very common occurrence (vert count/order changing during skin reimport), and the bulk of the work on the Skinner tool went into making a fast & good looking solution here.  If there is a 'vert count / vert order' match during import, then the weights are read on 1:1 with no interpolation.  But if not, a FSM can act on ```SkinChunk``` data (if there is a name match, but no vert count/order match) or on the ```UberChunk```, when there is no name match:  Your mesh will get skinned, no matter what.  The two built in algorithms are:
   * Closest Neighbors:  Custom algorithm written for this tool.  After considering barycentric coordinates, I felt there was a better way to calculate weights based on a point cloud of targets.  When this algorithm is used, for each vert needing skinning, this is the process used to generate the new weights:
     * Find the closest target (in the ```SkinChunk```/```UberChunk``` point cloud) vert to the source : Store that distance.  Say, it’s 1.0 cm
     * Based on the ‘Nearest Neighbor Distance Mult’ (default 2.0), generate a sphere around the source vert that is (closest vert distance * nearest neighbor distance mult) : In this example, the sphere would have a radius of 2.0 cm / diameter of 4.0 cm
@@ -299,16 +302,16 @@ UI Elements:
     * If there is no ```dagPose``` node for that ```skinCluster``` / influences, it will be skipped without error.
     * If 'Import Using Pre-Deformed Shape Positions' is checked, this will be unchecked. 
   * Import Using Pre-Deformed Shape Positions? : 
-    * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in any pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unecesary.  
-    * In Maya, the term for the 'pre-deformed' mesh shape node is the 'intermediate object', and by default those nodes get an ```Orig``` suffix (like ```myMeshNameShapeOrig```).  The below gif shows their relationship to the deformation history, and how to enable/show and disable/hide them.  The 'green' mesh is the pre-deformed shape / intermedite object that is queried both at SkinChunk export time, and during import, if this options is checked:
+    * Only applies if a FSM is being used:  If this is checked (v1.1.0), it allows you to load the skinning onto a already-skinned mesh in any pose.  It does this by using the 'pre-deformed' vert positions of the mesh (comparing against the saved 'pre-deformed' positions in the SkinChunk) in the FSM logic, instead of whatever pose it's currently in.  Generally you want this on.  If on, 'Set to Bindpose' is unnecessary.  
+    * In Maya, the term for the 'pre-deformed' mesh shape node is the 'intermediate object', and by default those nodes get an ```Orig``` suffix (like ```myMeshNameShapeOrig```).  The below gif shows their relationship to the deformation history, and how to enable/show and disable/hide them.  The 'green' mesh is the pre-deformed shape / intermediate object that is queried both at SkinChunk export time, and during import, if this options is checked:
 ![skinner_importTab](images/preDeformedShape.gif)
     * If 'Set To Bindpose?' is checked, this will be unchecked. 
 * **5 : Influence Options**
   * Build Missing Influences
     * If this is checked, and any joints (influences) are missing in the current scene, they will be auto-created during skinning. If the mesh you're importing onto is already skinned, this will force it to go to the bindpose first. 
     * They will attempt to parent themselves to their original parents, if found.  Otherwise they’ll be parented to the world.  
-    * Since the user has the option of **not** exporting Skinner data in the bindpose, if the tool detects for this at time of export, it will instead store the value in the joint's ```bindPose``` attr, which is the worldspace matrix at time of skinning.  But this value is only valid if the joint is connected to a ```dagPose``` node (users could delete them), so if that is missing, and it's not in the bind pose, the existing worldspace matrix is used, which is probably not what yout want, but all we can query under the circumstances.
-    * The tool wil do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
+    * Since the user has the option of **not** exporting Skinner data in the bindpose, if the tool detects for this at time of export, it will instead store the value in the joint's ```bindPose``` attr, which is the worldspace matrix at time of skinning.  But this value is only valid if the joint is connected to a ```dagPose``` node (users could delete them), so if that is missing, and it's not in the bind pose, the existing worldspace matrix is used, which is probably not what you want, but all we can query under the circumstances.
+    * The tool will do its best to maintain the original local transformation values on the joint based on where they need to live in worldspace.  The overall process is:
       * Generate every joint needed (parented to the world), set the stored rotate order, and apply its stored worldspace matrix.
       * Look for the stored parent, and parent it if found.
       * After parenting, apply the original/stored local transformations (translate, rotate, scale, rotateAxis, jointOrient).
@@ -329,7 +332,7 @@ UI Elements:
     * If vert count of the source mesh being imported onto is greater than the the vert count in the ```SkinChunk```/```UberChunk``` target data being loaded from:  Smooth the resultant skinning based on the number of steps (since we have a smaller sample-set of weights than we do verts).  This is the same operation as Maya’s ‘Skin -> Smooth Skin Weights’ tool, with the ‘Required Weight Distance’ set to .5, and the ‘Smoothing Operation’ set to this value.
     * Continuing the logic, if the vert count of the source mesh is less than that of the target ```SkinChunk```/```UberChunk```, then no smoothing will be performed, since we have a larger target sample-set than we do source verts.
     * Note, if smoothing is performed, it only acts on source verts that are in different worldspace locations than target verts.  Since if they’re in the same position as an arbitrary target, you want to leave those weights 1:1 as-is.   
-    * Set this value to 0 to disable entirely.  How this acts is also modifed by the 'Weight Difference Threshold', below:
+    * Set this value to 0 to disable entirely.  How this acts is also modified by the 'Weight Difference Threshold', below:
   * Weight Difference Threshold: : Added 1.1.7
     * If the 'Smooth Steps' (above) is a positive value, and those conditions are met:  Only verts that have a 'difference in weights' greater than this value will be smoothed.
     * The default is 0.25 : This means, that if abs(vertWeightA - vertWeightB) > 0.25, that vert's weights will be smoothed.
@@ -367,7 +370,7 @@ UI Elements:
     * Auto Fill : By default, this will be set to the directory of the currently saved scene.  
       * For example, if the current scene is saved here: ```c:\path\to\my\awesome\file.mb```, pressing that button would fill the field with: ```c:\path\to\my\awesome\file.sknr```.
       * You can modify this to append extra subdir(s) to it via the 'Extras' tab (discussed below).
-    * ‘…’ : Browse to a specific file (exiting or not) to export to.
+    * ‘…’ : Browse to a specific file (existing or not) to export to.
 * **Set To Bindpose:**
   * If this is checked :  Set all exported mesh & their influences to their bindpose before the export.  For each ```dagPose``` node, if for any reason the bindpose can’t be set, there will be an error.  If there is no ```dagPose``` node, it will be silently skipped.
   * Usually you’d want this checked, since it will store out the accurate worldspace and local transforms of the joint influences, which is handy if they need rebuilt during import.  But if you’re copying off of some worldspace pose onto some other similar worldspace pose (and don't have concerns about missing influences needing be created), you’d want it unchecked.
@@ -388,7 +391,7 @@ Here is a made up example using a wrapper module/function around Perforce:
 ```python
 import myCompany.myP4Tool as p4Tool; p4Tool.manageFile('%s')
 ```
-Where it’s presumed that the manageFile function will both mark for add or edit the provide file, based on its current server status.
+Where it’s presumed that the manageFile function will both mark for add or edit the provided file, based on its current server status.
 
 **Depot Root**
 * If this is provided, it’s the local path to the root of your version control depot.
@@ -426,10 +429,11 @@ skinWin.App(docsOverride="www.someSite.com/path/to/docs.html")
 ```
 * **Verbose Logging** : If this is checked, print information to the Script Editor. If unchecked, mostly only Errors and Warnings will show up.
 * **Reset Preferences** : Will clear out any user-defined values in the tool, setting it back to 'factory defaults'.
+* **Reset All To Defaults** : Resets the main import/export/extras settings to their startup defaults, and prints `All settings reset to defaults` to the Script Editor.
 * **‘Auto-Fill’ Subdir :**
   *  If this is populated, this is a subdir(s, could as deep as needed) that will be appended to the '<- Auto-Fill' buttons in the Export & Import tabs.  
   *  This is handy if in your production, you always save skin weights in a subdir relative to the current scene:  This field makes it easy to update the ‘Auto-Fill’ button with that subdir.  
-  *  For example, Let's say that subdir is called ```rigData```, and eveyrthing rigging & skinning related goes in there : If your current scene is saved here ```c:\path\to\my\awesome\file.mb```, when you press the 'Auto Fill' button, the resultant path would be : ```c:\path\to\my\awesome\rigData\file.sknr```
+  *  For example, Let's say that subdir is called ```rigData```, and everything rigging & skinning related goes in there : If your current scene is saved here ```c:\path\to\my\awesome\file.mb```, when you press the 'Auto Fill' button, the resultant path would be : ```c:\path\to\my\awesome\rigData\file.sknr```
 * **Skinner Package Path** : (v1.1.3) Just an FYI to tell the user where the Skinner tool is installed.
 * **Print sknr file info…**
   *  The ```.sknr``` file format is binary : It’s pickled Python data.  Because of that, it’s not human readable.  This section can be used to browse to, and print information in a ```.sknr``` file to the Script Editor, based on the checkboxes set, and the min/max print indices (to help limit how much info is printed for large files).
@@ -455,7 +459,7 @@ When you interactively select ‘items’ for export, regardless of what is sele
 * The influence joint list.  Plus their worldspace transforms, parents, (and as of 1.1.1) local transform values and rotate orders.
 * Both the worldspace position for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace positions (from the intermediateObject).
 * Both the worldspace normal for each target vert exported in the current pose, and (as of 1.1.0) the 'pre-deformed' worldspace normals (from the intermediateObject).
-* If there is valid 'pre-deformed' point/normal data to query (per the above two bullets): If the mesh is in the bindpose during export, this extra data isn't stored, since it's the same as the current worldspace positions, and is redundant/unecessary.
+* If there is valid 'pre-deformed' point/normal data to query (per the above two bullets): If the mesh is in the bindpose during export, this extra data isn't stored, since it's the same as the current worldspace positions, and is redundant/unnecessary.
 * Whether or not it's in the bindpose when the SkinChunk is created (v1.1.1).
 * The influence weights for each target vert exported.
 * The ‘blend weights’ for each target vert exported, if the ‘skinning method’ is ‘weight-blended’.

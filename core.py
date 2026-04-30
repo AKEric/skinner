@@ -1800,7 +1800,7 @@ def importSkinChunks(filePaths:list, verbose=True) -> list:
     if not np:
         raise ImportError("Unable to import the numpy module")
     if not KDTree:
-        raise ImportError("Unable t0 import the scipy.spatial.KDTree module")
+        raise ImportError("Unable to import the scipy.spatial.KDTree module")
 
     if verbose:
         print("#----------------------------------------------------------")
