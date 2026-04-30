@@ -209,10 +209,14 @@ print(sp.__file__)
 # C:\Program Files\Autodesk\Maya2022\Python37\lib\site-packages\scipy\__init__.py
 ```
 ## Integrating Into Your Pipeline
-All code lives in a ```/skinner``` Python package.  
-* If you don't use git to manage code, you can easily download/extract via the provided zip. There are two ways:
-  * Access the [Releases](https://github.com/AKEric/skinner/releases) page, and download a zip of the most current release.
-  * Download a zip of this repro's head revision via the green Code button -> Download zip.
+All code lives in a ```/skinner``` Python package. To preserve the import namespace, your final install must be importable as ```import skinner``` (meaning the folder on Maya's ```sys.path``` must be named ```skinner```).
+* There are two supported install paths:
+  * **Manual zip download** (works fine, requires a folder rename in some cases):
+    * Access the [Releases](https://github.com/AKEric/skinner/releases) page and download the latest zip, or use the green Code button -> Download ZIP.
+    * GitHub-generated zip roots are often named like ```skinner-main``` or ```skinner-<tag>``` : rename that extracted folder to exactly ```skinner```.
+  * **Git clone** (no rename needed):
+    * ```git clone https://github.com/AKEric/skinner.git```
+    * This creates a local folder named ```skinner``` by default, which already matches the required import namespace.
 * Figure out where you should extract it based on how your Maya is configured:
   * To get a list of paths valid for copy, execute in a Python tab in the Script Editor:
 ```python
@@ -228,7 +232,7 @@ C:/Users/your.name/Documents/maya/scripts
 ...
 ```
 * Choose one that looks appropriate for you and :
-  * Open the zip, and extract the ```/skinner``` subdir to that dir.
+  * Place/copy the package folder so your final path is ```<scriptsPath>/skinner``` containing files like ```__init__.py``` and ```core.py```.
   * It is now available for import & usage in Maya!  **Restart Maya if it was open.**
 * To test that you have a successful install via the Maya Script Editor, run the test suite (in a Python tab), and see the results:
 ```python
