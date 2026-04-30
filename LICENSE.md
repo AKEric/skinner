@@ -4,7 +4,7 @@ Skinner Licence
 - You can extend / adapt it into your pipeline via it’s API, that’s encouraged.
 - You can’t (re)sell it, but you can sell anything made with it.
 - By installing/using the Skinner tool you're accepting all repsonsibilities for its usage, and release Eric Pavey from any and all liability.
-- © 2024 - All Rights Reserved - Eric Pavey
+- © 2026 - All Rights Reserved - Eric Pavey
 
 Anything listed above superseeds the below license. 
 

@@ -84,10 +84,12 @@ Changelog:
     2026-04-24 : v1.3.2 : Hardening core.exportTempSkin/core.importTempSkin path
         handling to normalize provided temp file paths, avoid conflicting path kwargs,
         and provide clearer temp-file cleanup errors.
+    2026-05-01 : v1.4.0 : Changing overall git filestrcture so it will play better with
+        git and Maya python package management.
 
 """
 __author__ = "Eric Pavey"
-__version__ = "1.3.2"
+__version__ = "1.4.0"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"
