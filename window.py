@@ -95,7 +95,7 @@ SETTING_IMPORT_SET_TO_BINDPOSE = "settings_skinner_importSetToBindpose"
 SETTING_EXPORT_SET_TO_BINDPOSE = "settings_skinner_exportSetToBindpose"
 
 PRINT_DATA_CHECKBOXES = [
-    "version", "meshShape", "creationDate",
+    "version", "sknrNdarrayMarker", "meshShape", "creationDate",
     "importPath", "user", "skinMethod", "meshVertCount",
     "numVerts", "vertIds", "infNum", "influences",
     "hasPreDeformedData", "atBindPose",

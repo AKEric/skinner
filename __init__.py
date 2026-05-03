@@ -86,11 +86,13 @@ Changelog:
         and provide clearer temp-file cleanup errors.
     2026-05-01 : v1.4.0 : Changing overall git filestructure so it will play better with
         git and Maya python package management.
-    2026-05-01 : v1.5.0 : Adding 'reset to defaults' options for all UI elements.        
+    2026-05-01 : v1.5.0 : Adding 'reset to defaults' options for all UI elements.
+    2026-05-03 : v1.5.1 : core.py : .sknr pickle stores NumPy arrays as portable
+        dtype/shape/bytes so files load across different NumPy major versions.
 
 """
 __author__ = "Eric Pavey"
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 __source__ = "https://github.com/AKEric/skinner"
 __documentation__ = "https://github.com/AKEric/skinner/blob/main/README.md"
 __licence__ = "https://github.com/AKEric/skinner/blob/main/LICENSE.md"

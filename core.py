@@ -109,6 +109,8 @@ Updates:
     2026-04-24 : v1.3.2 : Hardening exportTempSkin/importTempSkin to normalize and
         consistently use the provided tempFilePath, improve conflicting kwargs
         handling for filePath/filePaths, and provide clearer filesystem errors.
+    2026-05-03 : v1.5.1 : .sknr pickle now stores NumPy arrays as dtype/shape/raw
+        bytes so files load across different NumPy major versions (forward saves).
 
 Examples:
 
@@ -710,6 +712,142 @@ def closestPointWeights(allSavedWeights:np.ndarray, allSavedBlendWeights:np.ndar
     return {"weights":newWeights, "blendWeights":newBlendWeights}
 
 #-----------------------------
+# Portable ndarray pickling (avoids NumPy's pickle reconstructors in .sknr files)
+
+# Dict key stored on each encoded array blob. A dedicated marker is required so
+# _decode_from_pickle can tell Skinner's {dtype, shape, data} records apart from
+# ordinary dicts that might legitimately use those same string keys (or older
+# pickles that nested unrelated metadata). The "__skinner_..._v1__" name is
+# namespaced and versioned so a future v2 layout can use a new constant without
+# ambiguity.
+_SKNR_NDARRAY_V1 = "__skinner_ndarray_v1__"
+
+
+def _encode_ndarray_for_pickle(arr: np.ndarray) -> dict:
+    r"""
+    Serialize one ndarray to a plain dict safe for pickle without using NumPy's
+    internal pickle hooks (which differ across NumPy major versions).
+
+    Parameters
+    arr : np.ndarray
+        Array to encode (any dtype/shape used by Chunk skin data).
+
+    Return : dict
+        Keys: __skinner_ndarray_v1__, dtype (dtype.str), shape, and data
+        (C-contiguous raw bytes from tobytes).
+    """
+    arr = np.ascontiguousarray(arr)
+    return {
+        _SKNR_NDARRAY_V1: True,
+        "dtype": arr.dtype.str,
+        "shape": tuple(arr.shape),
+        "data": arr.tobytes(order="C"),
+    }
+
+
+def _is_portable_ndarray_dict(obj: object) -> bool:
+    r"""
+    Return True if obj is a dict produced by _encode_ndarray_for_pickle.
+
+    Parameters
+    obj : object
+        Candidate object during pickle decode walk.
+
+    Return : bool
+    """
+    return isinstance(obj, dict) and obj.get(_SKNR_NDARRAY_V1) is True
+
+
+def _decode_portable_ndarray(d: dict) -> np.ndarray:
+    r"""
+    Rebuild an ndarray from a v1 portable dict (inverse of
+    _encode_ndarray_for_pickle).
+
+    Empty arrays use np.empty; non-empty use frombuffer then reshape.
+    The result is copied so the array is writable (frombuffer views are
+    read-only), matching arrays built from Maya queries.
+
+    Parameters
+    d : dict
+        Must include dtype, shape, and data bytes.
+
+    Return : np.ndarray
+
+    Raises
+    ValueError
+        If len(data) does not match element count × dtype itemsize.
+    """
+    dtype = np.dtype(d["dtype"])
+    shape = tuple(d["shape"])
+    data = d["data"]
+    count = int(np.prod(shape, dtype=np.int64)) if shape else 1
+    if count == 0:
+        return np.empty(shape, dtype=dtype)
+    itemsize = dtype.itemsize
+    if len(data) != count * itemsize:
+        raise ValueError(
+            "skinner portable ndarray: byte length %s != %s * %s for shape %s, dtype %s"
+            % (len(data), count, itemsize, shape, dtype)
+        )
+    arr = np.frombuffer(data, dtype=dtype)
+    out = arr.reshape(()) if shape == () else arr.reshape(shape)
+    # frombuffer is read-only; match mutability of freshly queried np.array data
+    return out.copy()
+
+
+def _encode_for_pickle(obj: object) -> object:
+    r"""
+    Recursively copy a pickle state tree, replacing every np.ndarray with a
+    portable dict so pickle.dump never records NumPy array pickling opcodes.
+
+    Dict keys and values, list/tuple elements are walked; other objects are left
+    unchanged (e.g. SkinChunk instances, datetime, strings).
+
+    Parameters
+    obj : object
+        Typically a Chunk instance __dict__ or nested containers thereof.
+
+    Return : object
+        Structure safe to pickle with only portable array blobs.
+    """
+    if isinstance(obj, np.ndarray):
+        return _encode_ndarray_for_pickle(obj)
+    if isinstance(obj, dict):
+        return {_encode_for_pickle(k): _encode_for_pickle(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_encode_for_pickle(x) for x in obj]
+    if isinstance(obj, tuple):
+        return tuple(_encode_for_pickle(x) for x in obj)
+    return obj
+
+
+def _decode_from_pickle(obj: object) -> object:
+    r"""
+    Recursively restore portable array dicts to ndarray. Dicts without the
+    Skinner marker and existing ndarray instances (legacy .sknr loads) are
+    left as-is aside from copying container structure.
+
+    Parameters
+    obj : object
+        Unpickled state from Chunk.__getstate__ or legacy instance dicts.
+
+    Return : object
+        Tree with np.ndarray restored for v1 blobs.
+    """
+    if _is_portable_ndarray_dict(obj):
+        return _decode_portable_ndarray(obj)
+    if isinstance(obj, np.ndarray):
+        return obj
+    if isinstance(obj, dict):
+        return {_decode_from_pickle(k): _decode_from_pickle(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_decode_from_pickle(x) for x in obj]
+    if isinstance(obj, tuple):
+        return tuple(_decode_from_pickle(x) for x in obj)
+    return obj
+
+
+#-----------------------------
 # Our Chunks, behold them!
 
 class Chunk:
@@ -734,6 +872,33 @@ class Chunk:
         self.normalsPreDeformed = [] # Added 1.1.0
         self.vertPositions = []
         self.vertPositionsPreDeformed = [] # Added 1.1.0
+
+    def __getstate__(self) -> dict:
+        r"""
+        Pickle hook: return a shallow copy of instance __dict__ with all ndarrays
+        replaced by portable dtype/shape/bytes dicts for cross-NumPy-compatible
+        .sknr files.
+
+        Return : dict
+            Pickle-safe instance state.
+        """
+        return _encode_for_pickle(self.__dict__.copy())
+
+    def __setstate__(self, state: object) -> None:
+        r"""
+        Pickle hook: merge decoded state into this instance. Portable array dicts
+        become writable ndarrays; legacy pickles may already contain ndarrays,
+        which are kept unchanged.
+
+        Parameters
+        state : dict or object
+            Unpickled state; normally a dict from __getstate__.
+        """
+        if isinstance(state, dict):
+            self.__dict__.update(_decode_from_pickle(state))
+        else:
+            # defensive: unexpected legacy layout
+            self.__dict__ = state
 
     #------------
     # Queries
@@ -1151,7 +1316,7 @@ class SkinChunk(Chunk):
                   infNum=True, influences=True, hasPreDeformedData=True, atBindPose=True,
                   blendWeightsPerVert=True, infWeightsPerVert=True, normalsPerVert=True,
                   infListSlice=[0,-1], neighbors=True, creationDate=True, importPath=True,
-                  user=True, version=True, rnd=4):
+                  user=True, version=True, sknrNdarrayMarker=True, rnd=4):
         r"""
         Print the information in this SkinChunk.  Seems to be missing calls to
         self.vertPositions & self.vertPositionsPreDeformed, self.normals & self.normalsPreDeformed :
@@ -1195,6 +1360,9 @@ class SkinChunk(Chunk):
         user : bool : Default True : Return the name of the user who generated this
             SkinChunk.
         version : Print the version of the Skinner tool this was saved with.
+        sknrNdarrayMarker : bool : Default True : If True, print the portable ndarray
+            dict key written into .sknr pickle files (same value as module constant
+            _SKNR_NDARRAY_V1).
         rnd : int : Default 4 : If printing the 'infWeightsPerVert', this will round
             the weight values.  If you want no rounding, enter 0 / None.
         """
@@ -1225,6 +1393,8 @@ class SkinChunk(Chunk):
                 # Possible someone with an old SkinChunk (pre Dec 7th, 2021) is
                 # calling to this code.
                 print("Generated with Skinner version : Unknown (old SkinChunk data)")
+        if sknrNdarrayMarker:
+            print("Portable .sknr ndarray marker key (_SKNR_NDARRAY_V1): %s"%_SKNR_NDARRAY_V1)
         if creationDate:
             print("Creation Date: %s"%self.getCreationTime())
         if importPath:
