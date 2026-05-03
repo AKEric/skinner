@@ -158,11 +158,12 @@ The "Integrate into your pipeline" sections explains how to figure out where you
 **If you're unfamiliar with this level of tool integration**, that's ok:  If you follow the below sections line by line, step by step, there's no reason you won't find success.
 
 ## Requirements
-* It has been tested on Windows 10.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
+* It has been tested on Windows 10 & 11.  No reason it shouldn’t work on other OS’s, but no testing has been done.  There has been intent in the code to make it cross-platform compatible (no Windows-centric calls have been used).
 * Python 3 (Maya 2022+)
   * This will not work on older versions of Maya running Python 2.7
 * Based on your version of Maya, these Python packages available on Maya’s Python’s ```sys.path``` for import:
   * [Numpy](https://numpy.org/)
+    * As of v1.5.1, now supports comingling of different Numpy versions, both v1 & v2.  Previously, ```.sknr``` files would be non-binary compatable if saved in a different Numpy version than the Skinner API trying to access them.  Maya 2026 ship with Numpy ```1.26.4```, but technically you could have ```2.x``` replace it.
   * [Scipy](https://scipy.org/)
   * By default they will be missing, so presume they need installed.
 
